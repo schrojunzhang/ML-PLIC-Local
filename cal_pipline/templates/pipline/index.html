@@ -1,0 +1,2325 @@
+<!--继承模板-->
+{% extends 'descriptors/base.html' %}
+
+<!--修改标题-->
+{% block title %}
+    <title>ML-PLIC</title>
+{% endblock %}
+<!--修改内容-->
+<!--巨幕-->
+{% block jumbotron %}
+    <h1 style="margin-top: 10px">ML-PLIC </h1>
+    <!--<h2 style="font-size: 28px;text-align: justify">A web server for customizing scoring functions and virtual screening</h2>-->
+    <p class="text-justify">
+        Cracking the entangling code of protein-ligand interactions (PLI) is of great importance for structure-based
+        drug design and target fishing. According to physical and biochemical philosophy, PLI can be characterized by
+        different representations, such as the energy terms from scoring functions and protein-ligand interaction
+        fingerprints, which can be used by machine learning (ML) algorithms to capture and learn the mode of PLI. Here,
+        we propose our ML-based protein-ligand interaction capturer (ML-PLIC) for automatically characterizing PLI and
+        developing ML-based scoring functions (MLSFs) to identify the potential binders of a specific protein target
+        through virtual screening.
+        <br><br><span class="text-primary">Pipeline</span> module integrates the individual <span
+            class="text-primary">Docking</span>, <span class="text-primary">Descriptors</span>, <span
+            class="text-primary">Modelling</span> and <span class="text-primary">Screening</span> modules. Users
+        can submit jobs of ligand docking, descriptor generation, modelling based on one of the three ML algorithms
+        (eXtreme Gradient Boosting, Support Vector Machine and Random Forest) and virtual screening, and users need to
+        provide all the required files once and for all.
+        <br><br> If you want to know the specific role of each module, please click the button below or go to the
+        <strong>Help</strong> page directly.
+    </p>
+{% endblock %}
+<!--主体内容-->
+{% block content %}
+    <!--任务提交-->
+    <!--表单-->
+    <form class="form-horizontal" action="{% url 'cal_pipline:pipline' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <!--基本配置行-->
+        <div class="row">
+            <!--总面板-->
+            <div class="panel panel-primary">
+                <!--上传文件标题-->
+                <div class="panel-heading text-center">
+                    <h3 style="margin-bottom: 0;margin-top: 0">Pipeline Panel</h3>
+                </div>
+                <!--文件面板-->
+                <div class="panel-body" style="padding-top: 30px;">
+                    <!--左半部分-->
+                    <div class="col-sm-6">
+                        <!--上传蛋白分子表单-->
+                        <div class="form-group">
+                            <!--标签宽度-->
+                            <label for="p-file" class="col-sm-3 control-label">Protein</label>
+                            <!--选择框宽度-->
+                            <div class="col-sm-9">
+                                <!--在首尾加入符号-->
+                                <div class="input-group">
+                                    <!--加入符号-->
+                                    <div class="input-group-addon" style="width: 60px;">.pdb</div>
+                                    <!--文件框-->
+                                    <input id='location' class="form-control" onclick="$('#p-file').click();">
+                                    <!--连接到选择文件按钮-->
+                                    <label class="input-group-btn">
+                                        <input type="button" id="i-check" value="Choose" class="btn btn-primary"
+                                               onclick="$('#p-file').click();">
+                                    </label>
+                                </div>
+                            </div>
+                            <!--选择文件按钮-->
+                            <input class="form-control my_hide" type="file" name="protein_file" id='p-file'
+                                   accept=".pdb"
+                                   onchange="$('#location').val($('#p-file').val());"
+                                   required="required">
+                        </div>
+                        <!--上传配体分子表单-->
+                        <div class="form-group">
+                            <!--标签宽度-->
+                            <label for="l-file" class="col-sm-3 control-label">Ligand</label>
+                            <!--选择框宽度-->
+                            <div class="col-sm-9">
+                                <!--在首尾加入符号-->
+                                <div class="input-group">
+                                    <!--加入符号-->
+                                    <div class="input-group-addon" style="width: 60px">.mol2</div>
+                                    <!--文件框-->
+                                    <input id='lig_location' class="form-control"
+                                           onclick="$('#l-file').click();">
+                                    <!--连接到选择文件按钮-->
+                                    <label class="input-group-btn">
+                                        <input type="button" id="i-check" value="Choose" class="btn btn-primary"
+                                               onclick="$('#l-file').click();">
+                                    </label>
+                                </div>
+                            </div>
+                            <!--选择文件按钮-->
+                            <input class="form-control my_hide" type="file" name="ligand_file" id='l-file'
+                                   accept=".mol2"
+                                   onchange="$('#lig_location').val($('#l-file').val());"
+                                   required="required">
+                        </div>
+                        <!--上传诱饵分子表单-->
+                        <div class="form-group">
+                            <!--标签宽度-->
+                            <label for="d-file" class="col-sm-3 control-label">Decoys</label>
+                            <!--选择框宽度-->
+                            <div class="col-sm-9">
+                                <!--在首尾加入符号-->
+                                <div class="input-group">
+                                    <!--加入符号-->
+                                    <div class="input-group-addon" style="width: 60px">.mol2</div>
+                                    <!--文件框-->
+                                    <input id='decoys_location' class="form-control"
+                                           onclick="$('#d-file').click();">
+                                    <!--连接到选择文件按钮-->
+                                    <label class="input-group-btn">
+                                        <input type="button" id="i-check" value="Choose" class="btn btn-primary"
+                                               onclick="$('#d-file').click();">
+                                    </label>
+                                </div>
+                            </div>
+                            <!--选择文件按钮-->
+                            <input class="form-control my_hide" type="file" name="decoys_file" id='d-file'
+                                   accept=".mol2"
+                                   onchange="$('#decoys_location').val($('#d-file').val());"
+
+                            >
+                        </div>
+                        <!--上传待筛选文件文件表单-->
+                        <div class="form-group">
+                            <!--标签宽度-->
+                            <label for="t-file" class="col-sm-3 control-label">Test ligand</label>
+                            <!--选择框宽度-->
+                            <div class="col-sm-9">
+                                <!--在首尾加入符号-->
+                                <div class="input-group">
+                                    <!--加入符号-->
+                                    <div class="input-group-addon" style="width: 60px">.mol2</div>
+                                    <!--文件框-->
+                                    <input id='test_location' class="form-control"
+                                           onclick="$('#t-file').click();">
+                                    <!--连接到选择文件按钮-->
+                                    <label class="input-group-btn">
+                                        <input type="button" id="i-check" value="Choose" class="btn btn-primary"
+                                               onclick="$('#t-file').click();">
+                                    </label>
+                                </div>
+                            </div>
+                            <!--选择文件按钮-->
+                            <input class="form-control my_hide" type="file" name="test_file" id='t-file' accept=".mol2"
+                                   onchange="$('#test_location').val($('#t-file').val());"
+                            >
+                        </div>
+                    </div>
+                    <!--右半部分-->
+                    <div class="col-sm-6">
+                        <!--上传是否对接表单-->
+                        <div class="form-group">
+                            <!--标签宽度-->
+                            <label for="c-file" class="col-sm-3 control-label">Docking</label>
+                            <!--选择框宽度-->
+                            <div class="col-sm-9">
+                                <!--在首尾加入符号-->
+                                <select class="form-control" id='dock_select' name="whether_dock">
+                                    <option>QuickVina</option>
+                                    <option>Smina</option>
+                                    <option>no</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!--上传算法表单-->
+                        <div class="form-group">
+                            <!--标签宽度-->
+                            <label for="c-file" class="col-sm-3 control-label">Modelling</label>
+                            <!--选择框宽度-->
+                            <div class="col-sm-9">
+                                <!--在首尾加入符号-->
+                                <select class="form-control" id='algo_select' name="algorithm">
+                                    <option>eXtreme Gradient Boosting</option>
+                                    <option>Support Vector Machine</option>
+                                    <option>Random Forest</option>
+                                    <option>No Modelling</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!--Email-->
+                        <div class="form-group">
+                            <!--标签宽度-->
+                            <label for="l-file" class="col-sm-3 control-label">Email <em>(optional)</em></label>
+                            <!--选择框宽度-->
+                            <div class="col-sm-9">
+                                <!--在首尾加入符号-->
+                                <div class="input-group" style="width: 100%">
+                                    <!--文件框-->
+                                    <input type="text" class="form-control" placeholder="xxx@zju.edu.cn"
+                                           aria-describedby="basic-addon2" name="my_email">
+                                    <!--加入符号-->
+                                    <div class="input-group-addon" style="width: 73px">@</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--上传晶体分子表单-->
+                        <div class="form-group">
+                            <!--标签宽度-->
+                            <label for="c-file" class="col-sm-3 control-label">Binding Site
+                                <em>(optional)</em></label>
+                            <!--选择框宽度-->
+                            <div class="col-sm-9">
+                                <!--在首尾加入符号-->
+                                <div class="input-group" id="binding_site">
+                                    <!--加入符号-->
+                                    <div class="input-group-addon binding_sites" style="width: 60px">.mol2</div>
+                                    <!--文件框-->
+                                    <input id='cry_location' class="form-control binding_sites"
+                                           onclick="$('#c-file').click();">
+                                    <!--连接到选择文件按钮-->
+                                    <label class="input-group-btn">
+                                        <!--传文件按钮-->
+                                        <button type="button" class="btn btn-primary" aria-label="Left Align"
+                                                id="crystal_uplpad"
+                                                onclick="$('#c-file').click();">
+                                            <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span>
+                                        </button>
+                                        <!--上传文件-->
+                                        <input type="button" id="i-check" value="Choose" class="btn btn-primary"
+                                               style="display: none"
+                                               onclick="$('#c-file').click();">
+                                    </label>
+                                    <!--选择获取活性位点坐标的方式-->
+                                    <label class="input-group-btn">
+                                        <button type="button" class="btn btn-success dropdown-toggle"
+                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a id="provide_crystal">Reference Ligand</a></li>
+                                            <li><a id="provide_res">Pocket Residues</a></li>
+                                            <li><a id="provide_xyz">Coordinates (X,Y,Z)</a></li>
+                                        </ul>
+                                    </label>
+                                </div>
+                            </div>
+                            <!--选择文件按钮-->
+                            <input class="form-control my_hide" type="file" name="crystal_file" id='c-file'
+                                   accept=".mol2"
+                                   onchange="$('#cry_location').val($('#c-file').val());">
+                        </div>
+                    </div>
+                </div>
+                <!--对接参数配置-->
+                <div class="collapse " id="my_docking_parameter">
+                    <!--对接面板 标题-->
+                    <ul class="list-group" style="margin-bottom: 0">
+                        <li class="list-group-item"
+                            style="color: #333;text-align: center;border-radius: 0;background-color: #f0f0f0;">
+                            <h3 style="margin: 0;">Docking</h3>
+                        </li>
+                    </ul>
+                    <!--对接面板 内容-->
+                    <div class="table-responsive">
+                        <table class="table table-hover " style="margin-bottom: 0px">
+                            <!--标题-->
+                            <thead>
+                            <tr>
+                                <th style="width: 15%">type</th>
+                                <th style="width: 20%">parameter</th>
+                                <th style="width: 30%">description</th>
+                            </tr>
+                            </thead>
+                            <!--内容-->
+                            <tbody>
+                            <!--蛋白-->
+                            <!--修复-->
+                            <tr>
+                                <td>protein repair</td>
+                                <td>
+                                    <select class="form-control" name="protein_repair">
+                                        <option>bonds_hydrogens</option>
+                                        <option>bonds</option>
+                                        <option>hydrogens</option>
+                                        <option>checkhydrogens</option>
+                                        <option>None</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <p class="text-justify ">
+                                        repair protein structure
+                                        <!--蛋白修复详细介绍链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_protein_repair" aria-expanded="true"
+                                           aria-controls="my_detail_protein_repair">
+                                            [detail...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--蛋白修复详细介绍-->
+                            <tr class="collapse" id="my_detail_protein_repair">
+                                <td colspan="3">
+                                    <p><strong>bonds_hydrogens</strong>: build bonds and add hydrogens;</p>
+                                    <p><strong>bonds</strong>: build a single bond from each atom with no bonds to
+                                        its closest neighbor;</p>
+                                    <p><strong>hydrogens</strong>: add hydrogens;</p>
+                                    <p><strong>checkhydrogens</strong>: add hydrogens only if there are none
+                                        already;</p>
+                                    <p><strong>None</strong>: do not make any repairs;</p>
+                                </td>
+                            </tr>
+                            <!--删除非标准残基-->
+                            <tr>
+                                <td>del_nonstd_residue</td>
+                                <td>
+                                    <select class="form-control" name="protein_delchain">
+                                        <option>no</option>
+                                        <option>yes</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <p class="text-justify ">
+                                        delete every non-standard residue
+                                        <!--删除非标准残基详细介绍链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_protein_delchain" aria-expanded="true"
+                                           aria-controls="my_detail_protein_delchain">
+                                            [detail...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--删除非标准残基详细介绍-->
+                            <tr class="collapse" id="my_detail_protein_delchain">
+                                <td colspan="3">
+                                    <p><strong>yes</strong>: delete any residue whose name is not in
+                                        ['CYS', 'ILE', 'SER', 'VAL', 'GLN', 'LYS', 'ASN',
+                                        'PRO', 'THR', 'PHE', 'ALA', 'HIS', 'GLY', 'ASP',
+                                        'LEU', 'ARG', 'TRP', 'GLU', 'TYR','MET'];</p>
+                                    <p><strong>no</strong>: no deletion;</p>
+                                </td>
+                            </tr>
+                            <!--删除无用原子-->
+                            <tr>
+                                <td>protein cleanup</td>
+                                <td>
+                                    <select class="form-control" name="protein_cleanup">
+                                        <option>standard</option>
+                                        <option>non-polar hydrogens</option>
+                                        <option>lone pairs</option>
+                                        <option>water residues</option>
+                                        <option>chains</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <p class="text-justify">
+                                        remove necessary atoms
+                                        <!--删除无用原子详细介绍链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_protein_cleanup" aria-expanded="true"
+                                           aria-controls="my_detail_protein_cleanup">
+                                            [detail...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--删除无用原子详细介绍-->
+                            <tr class="collapse" id="my_detail_protein_cleanup">
+                                <td colspan="3">
+                                    <p><strong>non-polar hydrogens</strong>: merge charges and remove non-polar
+                                        hydrogens;</p>
+                                    <p><strong>lone pairs</strong>: merge charges and remove lone pairs;</p>
+                                    <p><strong>water residues</strong>: remove water residues;</p>
+                                    <p><strong>chains</strong>: remove chains composed entirely of residues of
+                                        types other than the standard 20 amino acids;</p>
+                                    <p><strong>standard</strong>: all the options mentioned above;</p>
+                                </td>
+                            </tr>
+                            <!--配体-->
+                            <!--修复-->
+                            <tr>
+                                <td>ligand repair</td>
+                                <td>
+                                    <select class="form-control" name="ligand_repair">
+                                        <option>bonds_hydrogens</option>
+                                        <option>bonds</option>
+                                        <option>hydrogens</option>
+                                        <option>None</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <p class="text-justify">
+                                        repair ligand structure
+                                        <!--修复配体详细介绍链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_ligand_repair" aria-expanded="true"
+                                           aria-controls="my_detail_ligand_repair">
+                                            [detail...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--配体修复详细介绍-->
+                            <tr class="collapse" id="my_detail_ligand_repair">
+                                <td colspan="3">
+                                    <p><strong>bonds_hydrogens</strong>: adds hydrogens and builds bonds to any
+                                        non-bonded atoms;</p>
+                                    <p><strong>bonds</strong>: build a single bond from each atom with no bonds to
+                                        its closest neighbor;</p>
+                                    <p><strong>hydrogens</strong>: add hydrogens;(PyBabel is used for adding all
+                                        hydrogens, not just polar-hydrogens;)</p>
+                                </td>
+                            </tr>
+                            <!--加电荷-->
+                            <tr>
+                                <td>add_charge</td>
+                                <td>
+                                    <select class="form-control" name="ligand_charge">
+                                        <option>yes</option>
+                                        <option>no</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <p class="text-justify">
+                                        add Gasteiger partial atomic charges
+                                        <!--修复配体详细介绍链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_ligand_charge" aria-expanded="true"
+                                           aria-controls="my_detail_ligand_charge">
+                                            [detail...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--加电荷详细介绍-->
+                            <tr class="collapse" id="my_detail_ligand_charge">
+                                <td colspan="3">
+                                    <p><strong>yes</strong>: add Gasteiger partial atomic charges;</p>
+                                    <p><strong>no</strong>: If this option is used, the input ligand should already
+                                        have partial atomic charges;</p>
+                                </td>
+                            </tr>
+                            <!--删除无用原子-->
+                            <tr>
+                                <td>ligand cleanup</td>
+                                <td>
+                                    <select class="form-control" name="ligand_cleanup">
+                                        <option>standard</option>
+                                        <option>non-polar hydrogens</option>
+                                        <option>lone pairs</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <p class="text-justify">
+                                        remove necessary atoms
+                                        <!--配体清除无用原子详细介绍链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_ligand_cleanup" aria-expanded="true"
+                                           aria-controls="my_detail_ligand_cleanup">
+                                            [detail...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--配体清除无用原子详细介绍-->
+                            <tr class="collapse" id="my_detail_ligand_cleanup">
+                                <td colspan="3">
+                                    <p><strong>non-polar hydrogens</strong>: merges non-polar hydrogens by adding
+                                        the charge of each non-polar hydrogen to the carbon to which it is bonded
+                                        and then removes the non-polar hydrogen from the ligand molecule;</p>
+                                    <p><strong>lone pairs</strong>: merges lone-pairs by adding the charge of each
+                                        lone pair to the atom to which it is 'bonded' and then removes the
+                                        lone-pair;</p>
+                                    <p><strong>standard</strong>: all the options mentioned above;</p>
+                                </td>
+                            </tr>
+                            <!--对接参数-->
+                            <!--搜索空间大小-->
+                            <tr>
+                                <td>search_space_size</td>
+                                <td>
+                                    <!--增加form-group 用于表单验证feedback-->
+                                    <div class="form-group" style="margin: 0">
+                                        <!--在首尾加入符号-->
+                                        <div class="input-group" style="width: 100%">
+                                            <!--文件框-->
+                                            <input type="text" class="form-control" value="18.75"
+                                                   aria-describedby="basic-addon2" name="space_size">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Float</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify">this value restricts where the movable atoms should
+                                        lie</p>
+                                </td>
+                            </tr>
+                            <!--搜索时间-->
+                            <tr>
+                                <td>exhaustiveness</td>
+                                <td>
+                                    <!--增加form-group 用于表单验证feedback-->
+                                    <div class="form-group" style="margin: 0">
+                                        <!--在首尾加入符号-->
+                                        <div class="input-group" style="width: 100%">
+                                            <!--文件框-->
+                                            <input type="text" class="form-control" value="8"
+                                                   aria-describedby="basic-addon2" name="exhaustiveness">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Integer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify">
+                                        exhaustiveness of the global search (roughly proportional to time)
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--产生构象数-->
+                            <tr>
+                                <td>num_binding</td>
+                                <td>
+                                    <!--增加form-group 用于表单验证feedback-->
+                                    <div class="form-group" style="margin: 0">
+                                        <!--在首尾加入符号-->
+                                        <div class="input-group" style="width: 100%">
+                                            <!--文件框-->
+                                            <input type="text" class="form-control" value="1"
+                                                   aria-describedby="basic-addon2" name="num_modes">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Integer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify">maximum number of binding modes to generate</p>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!--模型参数隐藏面板-->
+                <div class="collapse in" id="my_descriptors_parameter">
+                    <!--被选中的描述符 标题-->
+                    <ul class="list-group" style="margin-bottom: 0">
+                        <li class="list-group-item"
+                            style="color: #333;text-align: center;border-radius: 0;background-color: #f0f0f0;">
+                            <h3 style="margin: 0">Descriptors</h3>
+                        </li>
+                        <li class="list-group-item"
+                            style="color: #333;text-align: center;border-radius: 0;border-bottom: none">
+                            <strong>Chosen Descriptors <span class="badge" id="my_descriptors_number"
+                                                             style="vertical-align: top"></span></strong>
+                        </li>
+                    </ul>
+                    <!--被选中的描述符 内容-->
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered" style="margin-bottom: 0">
+                            <tr id="my_chosen_descriptors_content"></tr>
+                        </table>
+                    </div>
+                    <!--描述符表格-->
+                    <div class="table-responsive">
+                        <table class="table table-hover " style="margin-bottom: 0;">
+                            <!--标题-->
+                            <tr>
+                                <th colspan="6" style="text-align: center">Energy term from scoring function</th>
+                            </tr>
+                            <!--打分函数-->
+                            <tr>
+                                <!--AffiScore-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="affiscore" name="aff">
+                                        AffiScore
+                                    </label>
+                                </td>
+                                <!--AffinitydG-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="affinitydG"
+                                               name="affi" disabled="disabled">
+                                        AffinitydG
+                                    </label>
+                                </td>
+                                <!--AlphaHB-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="alphaHB" name="alp"
+                                               disabled="disabled">
+                                        AlphaHB
+                                    </label>
+                                </td>
+                                <!--Ase-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="ase" name="ase"
+                                               disabled="disabled">
+                                        Ase
+                                    </label>
+                                </td>
+                                <!--Asp-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="asp" name="asp"
+                                               disabled="disabled">
+                                        Asp
+                                    </label>
+                                </td>
+                                <!--AutoDock4-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="autodock" name="aut">
+                                        AutoDock 4
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <!--Chemgauss-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="chemgauss"
+                                               name="gau" disabled="disabled">
+                                        Chemgauss
+                                    </label>
+                                </td>
+                                <!--ChemPLP-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="chemplp" name="che"
+                                               disabled="disabled">
+                                        ChemPLP
+                                    </label>
+                                </td>
+                                <!--ChemScore-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="chemscore"
+                                               name="chem" disabled="disabled">
+                                        ChemScore
+                                    </label>
+                                </td>
+                                <!--Contact-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="contact" name="con">
+                                        Contact
+                                    </label>
+                                </td>
+                                <!--Continuous-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="continuous"
+                                               name="cont">
+                                        Continuous
+                                    </label>
+                                </td>
+                                <!--CyScore-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="cyscore" name="cys">
+                                        CyScore
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <!--DSX-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="dsx" name="dsx"> DSX
+                                    </label>
+                                </td>
+                                <!--Galaxy BP2-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="galaxy" name="gal">
+                                        Galaxy BP2
+                                    </label>
+                                </td>
+                                <!--GBVIWSAdG-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="GBVIWSAdG"
+                                               name="gbv" disabled="disabled">
+                                        GBVIWSAdG
+                                    </label>
+                                </td>
+                                <!--Glide sp-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="sp" name="sp"
+                                               disabled="disabled">
+                                        Glide sp
+                                    </label>
+                                </td>
+                                <!--Glide xp-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="xp" name="xp"
+                                               disabled="disabled">
+                                        Glide xp
+                                    </label>
+                                </td>
+                                <!--GoldScore-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="goldscore"
+                                               name="gol" disabled="disabled">
+                                        GoldScore
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <!--Grid-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="grid" name="gri">
+                                        Grid
+                                    </label>
+                                </td>
+                                <!--Hawkins-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="hawkins" name="haw">
+                                        Hawkins
+                                    </label>
+                                </td>
+                                <!--LdG-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="LondondG" name="ldg"
+                                               disabled="disabled">
+                                        LdG
+                                    </label>
+                                </td>
+                                <!--NNScore 2-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="nn_vina" name="nn"
+                                               checked="checked">
+                                        NNScore 2
+                                    </label>
+                                </td>
+                                <!--PLP-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="plp" name="plp"
+                                               disabled="disabled"> PLP
+                                    </label>
+                                </td>
+                                <!--PLP 95-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="plp95" name="plp9"
+                                               disabled="disabled">
+                                        PLP 95
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <!--Rdock-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="rdock" name="rdo">
+                                        Rdock
+                                    </label>
+                                </td>
+                                <!--Rdock Solv-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="rdock_sol"
+                                               name="rdoc">
+                                        Rdock Solv
+                                    </label>
+                                </td>
+                                <!--RF Credo-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="rfscore_credo"
+                                               name="cre">
+                                        RF Credo
+                                    </label>
+                                </td>
+                                <!--RF Element-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="rfscore_element"
+                                               name="ele">
+                                        RF Element
+                                    </label>
+                                </td>
+                                <!--RF Sybyl-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="rfscore_sybyl"
+                                               name="syb"> RF Sybyl
+                                    </label>
+                                </td>
+                                <!--SASA-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="sasa" name="sas">
+                                        SASA
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <!--Smina-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="smina" name="smi"
+                                               checked="checked">
+                                        Smina
+                                    </label>
+                                </td>
+                                <!--SMoG2016-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="smog2016" name="smo">
+                                        SMoG2016
+                                    </label>
+                                </td>
+                                <!--Surflex-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="surflex" name="sur"
+                                               disabled="disabled">
+                                        Surflex
+                                    </label>
+                                </td>
+                                <!--Vina-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="vina" name="vin">
+                                        Vina
+                                    </label>
+                                </td>
+                                <!--XScore-->
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="xscore" name="xsc"
+                                               disabled="disabled">
+                                        XScore
+                                    </label>
+                                </td>
+                                <td>
+                                </td>
+                            </tr>
+                            <!--相互作用指纹 标题-->
+                            <tr>
+                                <th colspan="6" style="text-align: center">Interaction Fingerprint</th>
+                            </tr>
+                            <!--相互作用指纹 内容-->
+                            <tr>
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="ifp" name="ifp"> IFP
+                                    </label>
+                                </td>
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="plec" name="ple"> PLEC
+                                    </label>
+                                </td>
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="silirid" name="sil">
+                                        SILIRID
+                                    </label>
+                                </td>
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="splif" name="spl">SPLIF
+                                    </label>
+                                </td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <!--分子指纹 标题-->
+                            <tr>
+                                <th colspan="6" style="text-align: center">Molecular Fingerprint</th>
+                            </tr>
+                            <!--分子指纹 内容-->
+                            <tr>
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="ecfp" name="ecf"> ECFP
+                                    </label>
+                                </td>
+                                <td>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="pubchem" name="pad">
+                                        PubchemFP
+                                    </label>
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <!--模型参数隐藏面板-->
+                <div class="collapse " id="my_model_parameter_table">
+                    <!--数据预处理-->
+                    <!--数据预处理 标题-->
+                    <ul class="list-group" style="margin-bottom: 0">
+                        <li class="list-group-item"
+                            style="border-bottom: none;color: #333;text-align: center;border-radius: 0;background-color: #f0f0f0;">
+                            <h3 style="margin: 0">Modelling-preprocessing</h3>
+                        </li>
+                    </ul>
+                    <!--预处理面板-->
+                    <div class="table-responsive">
+                        <table class="table table-hover" style="margin-bottom: 0">
+                            <!-- 表格标题-->
+                            <tr>
+                                <th style="width: 15%">type</th>
+                                <th style="width: 20%">method</th>
+                                <th style="width: 20%">parameter</th>
+                                <th style="width: 45%">description</th>
+                            </tr>
+                            <!--内容-->
+                            <!--数据标准化-->
+                            <tr>
+                                <td>Standardization</td>
+                                <td>
+                                    <select class="form-control" name="scaler" style="width: 80%">
+                                        <option>StandardScaler</option>
+                                        <option>MinMaxScaler</option>
+                                        <option>MaxAbsScaler</option>
+                                        <option>RobustScaler</option>
+                                        <option>Normalizer</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="" name="scaler_para" disabled="disabled">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Integer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify">
+                                        mean removal and variance scaling
+                                        <!--蛋白修复详细介绍链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_Standardization" aria-expanded="true"
+                                           aria-controls="my_detail_Standardization">
+                                            [detail...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--数据标准化详细介绍-->
+                            <tr class="collapse" id="my_detail_Standardization">
+                                <td colspan="4">
+                                    <p><strong>StandardScaler</strong>: removes the mean and scales the data to unit
+                                        variance;</p>
+                                    <p><strong>MinMaxScaler</strong>: rescales the data set such that all feature values
+                                        are in the range [0, 1];</p>
+                                    <p><strong>MaxAbsScaler</strong>: the absolute values are mapped in the range [0,
+                                        1];</p>
+                                    <p><strong>RobustScaler</strong>: the centering and scaling statistics of this
+                                        scaler are based on percentiles and are therefore not influenced by a few number
+                                        of very large marginal outliers;</p>
+                                    <p><strong>Normalizer</strong>: rescales the vector for each sample to have unit
+                                        norm, independently of the distribution of the samples;</p>
+                                </td>
+                            </tr>
+                            <!--特征工程-->
+                            <tr>
+                                <td>Feature selection</td>
+                                <td>
+                                    <select class="form-control" name="feature_selector" style="width: 80%">
+                                        <option>SelectFromModel</option>
+                                        <option>Chi-squared</option>
+                                        <option>ANOVA</option>
+                                        <option>Mutual_info</option>
+                                        <option>Retain_all</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input type="text" class="form-control" value="100"
+                                                   name="feature_selector_para">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Integer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify">
+                                        used for feature selection/dimensionality reduction on sample sets
+                                        <!--蛋白修复详细介绍链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_Feature_selection" aria-expanded="true"
+                                           aria-controls="my_detail_Feature_selection">
+                                            [detail...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--特征工程详细介绍-->
+                            <tr class="collapse" id="my_detail_Feature_selection">
+                                <td colspan="4">
+                                    <p><strong>SelectFromModel</strong>: Random Forest Classifiers are used to compute
+                                        impurity-based feature importances, which in turn can be used to discard
+                                        irrelevant features,the parameters means the number of tree;</p>
+                                    <p><strong>Chi-squared</strong>: selecting the best features based on univariate
+                                        statistical tests, the parameters means the number of selected features;</p>
+                                    <p><strong>ANOVA</strong>: selecting the best features based on univariate
+                                        statistical tests, the parameters means the number of selected features;</p>
+                                    <p><strong>Mutual_info</strong>: selecting the best features based on univariate
+                                        statistical tests, the parameters means the number of selected features;</p>
+                                    <p><strong>Retain_all</strong>: no feature selection and the model will be trained
+                                        with all features;</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <!--超参数设置-->
+                    <!--超参数设置 标题-->
+                    <ul class="list-group" style="margin-bottom: 0;">
+                        <li class="list-group-item"
+                            style="border-bottom: none;color: #333;text-align: center;border-radius: 0;background-color: #f0f0f0;">
+                            <h3 style="margin: 0">Hyper-parameters</h3>
+                        </li>
+                    </ul>
+                    <!--面板-->
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="hyper_parameters">
+                            <!--标题-->
+                            <tr>
+                                <th style="width: 15%">parameter</th>
+                                <th style="width: 20%">method</th>
+                                <th style="width: 20%">value range</th>
+                                <th style="width: 45%">description</th>
+                            </tr>
+                            <!--xgb内容-->
+                            <tbody class="my_hyper" id="xgb">
+                            <!--寻优次数-->
+                            <tr>
+                                <td>tuning times</td>
+                                <td><select class="form-control" disabled="disabled" style="width: 80%">
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input type="text" class="form-control" value="100" name="max_eval">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Integer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>[0, 1000]</kbd> the optimization times of hyper-parameters;
+                                        <!--寻优次数建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_tuning_times" aria-expanded="true"
+                                           aria-controls="mmy_detail_tuning_times">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--寻优次数建议-->
+                            <tr class="collapse" id="my_detail_tuning_times">
+                                <td colspan="4">
+                                    <p>The larger the value, the more likely it is to find better hyper-parameters and
+                                        the longer it will take;</p>
+                                </td>
+                            </tr>
+                            <!--超参数-->
+                            <!--n_estimators-->
+                            <tr>
+                                <td>n_estimators</td>
+                                <td><select class="form-control" name="n_estimators_method" style="width: 80%">
+                                    <option>uniformint</option>
+                                    <option>randint</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="100-300" name="n_estimators">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Integer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>[1, 9999]</kbd> number of boosting rounds;
+                                        <!--n_estimators建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_n_estimators" aria-expanded="true"
+                                           aria-controls="mmy_detail_n_estimators">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--n_estimators建议-->
+                            <tr class="collapse" id="my_detail_n_estimators">
+                                <td colspan="4">
+                                    <p>increasing this value will improve the learning ability of the model and the
+                                        probability for model being overfitting;</p>
+                                </td>
+                            </tr>
+                            <!--learning rate-->
+                            <tr>
+                                <td>learning rate</td>
+                                <td><select class="form-control" name="learning_rate_method" style="width: 80%">
+                                    <option>uniform</option>
+                                    <option>loguniform</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="0.01-0.3" name="learning_rate">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Float</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>(0, 1]</kbd> step size shrinkage used in update to prevents overfitting;
+                                        <!--learning_rate建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_learning_rate" aria-expanded="true"
+                                           aria-controls="mmy_detail_learning_rate">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--learning_rate建议-->
+                            <tr class="collapse" id="my_detail_learning_rate">
+                                <td colspan="4">
+                                    <p>learning rate shrinks the feature weights to make the boosting process more
+                                        conservative;</p>
+                                </td>
+                            </tr>
+                            <!--subsample-->
+                            <tr>
+                                <td>subsample</td>
+                                <td><select class="form-control" name="subsample_method" style="width: 80%">
+                                    <option>uniform</option>
+                                    <option>loguniform</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="1" name="subsample">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Float</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>(0, 1]</kbd> subsample ratio of the training instances;
+                                        <!--subsample建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_subsample" aria-expanded="true"
+                                           aria-controls="mmy_detail_subsample">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--subsample建议-->
+                            <tr class="collapse" id="my_detail_subsample">
+                                <td colspan="4">
+                                    <p>decreasing this value can prevent overfitting;</p>
+                                </td>
+                            </tr>
+                            <!--max_depth-->
+                            <tr>
+                                <td>max depth</td>
+                                <td><select class="form-control" name="max_depth_method" style="width: 80%">
+                                    <option>uniformint</option>
+                                    <option>randint</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="3-50" name="max_depth">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Integer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>[1, 9999]</kbd> Maximum depth of a tree;
+                                        <!--max_depth建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_max_depth" aria-expanded="true"
+                                           aria-controls="mmy_detail_max_depth">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--max_depth建议-->
+                            <tr class="collapse" id="my_detail_max_depth">
+                                <td colspan="4">
+                                    <p>Increasing this value will make the model more complex and more likely to
+                                        overfit;</p>
+                                </td>
+                            </tr>
+                            <!--gamma-->
+                            <tr>
+                                <td>gamma</td>
+                                <td><select class="form-control" name="gamma_method" style="width: 80%">
+                                    <option>uniform</option>
+                                    <option>loguniform</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="0" name="gamma">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Float</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>[0, 9999]</kbd> Minimum loss reduction required to make a further partition
+                                        on a leaf node of the tree;
+                                        <!--gamma建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_gamma" aria-expanded="true"
+                                           aria-controls="mmy_detail_gamma">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--gamma建议-->
+                            <tr class="collapse" id="my_detail_gamma">
+                                <td colspan="4">
+                                    <p>The larger gamma is, the more conservative the algorithm will be;</p>
+                                </td>
+                            </tr>
+                            <!--min_child_weight-->
+                            <tr>
+                                <td>min child weight</td>
+                                <td><select class="form-control" name="min_child_weight_method" style="width: 80%">
+                                    <option>uniform</option>
+                                    <option>loguniform</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="1" name="min_child_weight">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Float</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>[0, 9999]</kbd> Minimum sum of instance weight (hessian) needed in a child;
+                                        <!--min_child_weight建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_min_child_weight" aria-expanded="true"
+                                           aria-controls="mmy_detail_min_child_weight">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--min_child_weight建议-->
+                            <tr class="collapse" id="my_detail_min_child_weight">
+                                <td colspan="4">
+                                    <p>The larger min_child_weight is, the more conservative the algorithm will be;</p>
+                                </td>
+                            </tr>
+                            <!--colsample_bytree-->
+                            <tr>
+                                <td>colsample_bytree</td>
+                                <td><select class="form-control" name="colsample_bytree_method" style="width: 80%">
+                                    <option>uniform</option>
+                                    <option>loguniform</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="1" name="colsample_bytree">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Float</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>(0, 1]</kbd> the subsample ratio of columns when constructing each tree;
+                                        <!--colsample_bytree建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_colsample_bytree" aria-expanded="true"
+                                           aria-controls="mmy_detail_colsample_bytree">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--colsample_bytree建议-->
+                            <tr class="collapse" id="my_detail_colsample_bytree">
+                                <td colspan="4">
+                                    <p>decreasing this value can prevent overfitting;;</p>
+                                </td>
+                            </tr>
+                            <!--colsample_bylevel-->
+                            <tr>
+                                <td>colsample_bylevel</td>
+                                <td><select class="form-control" name="colsample_bylevel_method" style="width: 80%">
+                                    <option>uniform</option>
+                                    <option>loguniform</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="1" name="colsample_bylevel">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Float</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>(0, 1]</kbd> the subsample ratio of columns when constructing each level;
+                                        <!--colsample_bylevel建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_colsample_bylevel" aria-expanded="true"
+                                           aria-controls="mmy_detail_colsample_bylevel">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--colsample_bylevel建议-->
+                            <tr class="collapse" id="my_detail_colsample_bylevel">
+                                <td colspan="4">
+                                    <p>decreasing this value can prevent overfitting;</p>
+                                </td>
+                            </tr>
+                            <!--colsample_bynode-->
+                            <tr>
+                                <td>colsample_bynode</td>
+                                <td><select class="form-control" name="colsample_bynode_method" style="width: 80%">
+                                    <option>uniform</option>
+                                    <option>loguniform</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="1" name="colsample_bynode">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Float</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>(0, 1]</kbd> the subsample ratio of columns when constructing each
+                                        node(split);
+                                        <!--colsample_bynode建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_colsample_bynode" aria-expanded="true"
+                                           aria-controls="mmy_detail_colsample_bynode">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--colsample_bynode建议-->
+                            <tr class="collapse" id="my_detail_colsample_bynode">
+                                <td colspan="4">
+                                    <p>decreasing this value can prevent overfitting;</p>
+                                </td>
+                            </tr>
+                            <!--reg_alpha-->
+                            <tr>
+                                <td>alpha</td>
+                                <td><select class="form-control" name="reg_alpha_method" style="width: 80%">
+                                    <option>uniform</option>
+                                    <option>loguniform</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="0" name="reg_alpha">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Float</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>[0, 9999]</kbd> L1 regularization term on weights;
+                                        <!--reg_alpha建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_reg_alpha" aria-expanded="true"
+                                           aria-controls="mmy_detail_reg_alpha">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--reg_alpha建议-->
+                            <tr class="collapse" id="my_detail_reg_alpha">
+                                <td colspan="4">
+                                    <p>Increasing this value will make model more conservative;</p>
+                                </td>
+                            </tr>
+                            <!--reg_lambda-->
+                            <tr>
+                                <td>lambda</td>
+                                <td><select class="form-control" name="reg_lambda_method" style="width: 80%">
+                                    <option>uniform</option>
+                                    <option>loguniform</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="1" name="reg_lambda">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Float</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>[0, 9999]</kbd> L1 regularization term on weights;
+                                        <!--reg_lambda建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_reg_lambda" aria-expanded="true"
+                                           aria-controls="mmy_detail_reg_lambda">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--reg_lambda建议-->
+                            <tr class="collapse" id="my_detail_reg_lambda">
+                                <td colspan="4">
+                                    <p>Increasing this value will make model more conservative;</p>
+                                </td>
+                            </tr>
+                            </tbody>
+                            <!--svm内容-->
+                            <tbody class="my_hyper" id="svm">
+                            <!--寻优次数-->
+                            <tr>
+                                <td>tuning times</td>
+                                <td><select class="form-control" disabled="disabled" style="width: 80%">
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input type="text" class="form-control" value="100" name="max_eval">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Integer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>[0, 1000]</kbd> the optimization times of hyper-parameters;
+                                        <!--寻优次数建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_svm_tuning_times" aria-expanded="true"
+                                           aria-controls="mmy_detail_svm_tuning_times">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--寻优次数建议-->
+                            <tr class="collapse" id="my_detail_svm_tuning_times">
+                                <td colspan="4">
+                                    <p>the larger the value is, the bigger probability of finding the best
+                                        hyper-parameters;</p>
+                                </td>
+                            </tr>
+                            <!--超参数-->
+                            <!--C-->
+                            <tr>
+                                <td>C</td>
+                                <td><select class="form-control" name="C_method" style="width: 80%">
+                                    <option>uniform</option>
+                                    <option>loguniform</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="0.1-10" name="C">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Float</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>(0, 9999]</kbd> Regularization parameter;
+                                        <!--C建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_C" aria-expanded="true"
+                                           aria-controls="mmy_detail_C">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--C建议-->
+                            <tr class="collapse" id="my_detail_C">
+                                <td colspan="4">
+                                    <p>Increasing this value will make model more conservative;</p>
+                                </td>
+                            </tr>
+                            <!--gamma-->
+                            <tr>
+                                <td>gamma</td>
+                                <td><select class="form-control" name="gamma_method" style="width: 80%">
+                                    <option>uniform</option>
+                                    <option>loguniform</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="0.001-1" name="gamma">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Float</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>(0, 9999]</kbd> Kernel coefficient;
+                                        <!--gamma建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_svm_gamma" aria-expanded="true"
+                                           aria-controls="mmy_detail_svm_gamma">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--gamma建议-->
+                            <tr class="collapse" id="my_detail_svm_gamma">
+                                <td colspan="4">
+                                    <p>None;</p>
+                                </td>
+                            </tr>
+                            </tbody>
+                            <!--rf内容-->
+                            <tbody class="my_hyper" id="rf">
+                            <!--寻优次数-->
+                            <tr>
+                                <td>tuning times</td>
+                                <td><select class="form-control" disabled="disabled" style="width: 80%">
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input type="text" class="form-control" value="100" name="max_eval">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Integer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>[0, 1000]</kbd> the optimization times of hyper-parameters;
+                                        <!--寻优次数建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_rf_tuning_times" aria-expanded="true"
+                                           aria-controls="mmy_detail_rf_tuning_times">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--寻优次数建议-->
+                            <tr class="collapse" id="my_detail_rf_tuning_times">
+                                <td colspan="4">
+                                    <p>the larger the value is, the bigger probability of finding the best
+                                        hyper-parameters;</p>
+                                </td>
+                            </tr>
+                            <!--超参数-->
+                            <!--n_estimators-->
+                            <tr>
+                                <td>n_estimators</td>
+                                <td><select class="form-control" name="n_estimators_method" style="width: 80%">
+                                    <option>uniformint</option>
+                                    <option>randint</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="100-300" name="n_estimators">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Integer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>[1, 9999]</kbd> the number of trees in the forest;
+                                        <!--n_estimators建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_rf_n_estimators" aria-expanded="true"
+                                           aria-controls="mmy_detail_rf_n_estimators">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--n_estimators建议-->
+                            <tr class="collapse" id="my_detail_rf_n_estimators">
+                                <td colspan="4">
+                                    <p>increasing this value will improve the learning ability of the model and the
+                                        probability for model being overfitting;</p>
+                                </td>
+                            </tr>
+                            <!--max_depth-->
+                            <tr>
+                                <td>max depth</td>
+                                <td><select class="form-control" name="max_depth_method" style="width: 80%">
+                                    <option>uniformint</option>
+                                    <option>randint</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="3-50" name="max_depth">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Integer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>[1, 9999]</kbd> Maximum depth of a tree;
+                                        <!--max_depth建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_rf_max_depth" aria-expanded="true"
+                                           aria-controls="my_detail_rf_max_depth">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--max_depth建议-->
+                            <tr class="collapse" id="my_detail_rf_max_depth">
+                                <td colspan="4">
+                                    <p>Increasing this value will make the model more complex and more likely to
+                                        overfit;</p>
+                                </td>
+                            </tr>
+                            <!--min_samples_leaf-->
+                            <tr>
+                                <td>min samples leaf</td>
+                                <td><select class="form-control" name="min_samples_leaf_method" style="width: 80%">
+                                    <option>uniformint</option>
+                                    <option>randint</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="1" name="min_samples_leaf">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Integer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>[1, 9999]</kbd> The minimum number of samples required to be at a leaf
+                                        node;
+                                        <!--min_samples_leaf建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_min_samples_leaf" aria-expanded="true"
+                                           aria-controls="my_detail_min_samples_leaf">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--min_samples_leaf建议-->
+                            <tr class="collapse" id="my_detail_min_samples_leaf">
+                                <td colspan="4">
+                                    <p>Increasing this value will make the model less complex and less likely to
+                                        overfit;;</p>
+                                </td>
+                            </tr>
+                            <!--min_samples_split-->
+                            <tr>
+                                <td>min samples split</td>
+                                <td><select class="form-control" name="min_samples_split_method" style="width: 80%">
+                                    <option>uniformint</option>
+                                    <option>randint</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="2" name="min_samples_split">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Integer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>[2, 9999]</kbd> The minimum number of samples required to split an internal
+                                        node;
+                                        <!--min_samples_split建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_min_samples_split" aria-expanded="true"
+                                           aria-controls="my_detail_min_samples_split">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--min_samples_split建议-->
+                            <tr class="collapse" id="my_detail_min_samples_split">
+                                <td colspan="4">
+                                    <p>Increasing this value will make the model less complex and less likely to
+                                        overfit;</p>
+                                </td>
+                            </tr>
+                            <!--min_impurity_decrease-->
+                            <tr>
+                                <td>min impurity decrease</td>
+                                <td><select class="form-control" name="min_impurity_decrease_method" style="width: 80%">
+                                    <option>uniform</option>
+                                    <option>loguniform</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="0.0" name="min_impurity_decrease">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Float</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>[0, 9999]</kbd> The minimum number of samples required to split an internal
+                                        node;
+                                        <!--min_impurity_decrease建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_min_impurity_decrease" aria-expanded="true"
+                                           aria-controls="my_detail_min_impurity_decrease">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--min_impurity_decrease建议-->
+                            <tr class="collapse" id="my_detail_min_impurity_decrease">
+                                <td colspan="4">
+                                    <p>Increasing this value will make the model less complex and less likely to
+                                        overfit;</p>
+                                </td>
+                            </tr>
+                            <!--max_features-->
+                            <tr>
+                                <td>max features</td>
+                                <td><select class="form-control" name="max_features_method" style="width: 80%">
+                                    <option>choice</option>
+                                    <option>uniformint</option>
+                                </select></td>
+                                <td>
+                                    <div class="form-group" style="margin: 0">
+                                        <div class="input-group" style="width: 100%">
+                                            <input class="form-control" value="sqrt" name="max_features">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">StrOrInt</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify" style="margin-bottom: 0">
+                                        <kbd>[sqrt, log2]&cup;[1, 19999]</kbd> The number of features to consider when
+                                        looking for the best split;
+                                        <!--max_features建议链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_max_features" aria-expanded="true"
+                                           aria-controls="my_detail_max_features">
+                                            [suggestion...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--max_features建议-->
+                            <tr class="collapse" id="my_detail_max_features">
+                                <td colspan="4">
+                                    <p>Decreasing this value will make the model less complex and less likely to
+                                        overfit;</p>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!--example-->
+                <div class="panel-footer" style="font-size: 18px;padding: 12px 18px">
+                    <strong>Example:</strong>
+                    <a href="{% url 'cal_queue:example_download' 'protein' %}">Protein</a>
+                    |
+                    <a href="{% url 'cal_queue:example_download' 'ligand' %}">Ligand</a>
+                    |
+                    <a href="{% url 'cal_queue:example_download' 'decoys' %}">Decoys</a>
+                    |
+                    <a href="{% url 'cal_queue:example_download' 'test' %}">Test Ligand</a>
+                    |
+                    <a href="{% url 'cal_queue:example_download' 'crystal_ligand' %}">Reference Ligand</a>
+                    |
+                    <a href="{% url 'cal_queue:result_show' "b'\xe2\x9a\x8e\xd3\xc6F\xd38\xd2\xcf\x19\xa2\xfa\xf9\x1a\xbd'cadd" %}">Result</a>
+                </div>
+            </div>
+            <br/><br/>
+            <!--提交任务行-->
+            <div class="row">
+                <!--提交任务-->
+                <div class="col-sm-6 col-sm-offset-3 text-center">
+                    <div class="btn-group" role="group" aria-label="...">
+                        <!--对接 隐藏/显示设置框按钮-->
+                        <button class="btn btn-primary btn-lg" type="button" data-toggle="collapse"
+                                data-target="#my_docking_parameter" aria-expanded="false"
+                                aria-controls="my_docking_parameter">
+                            Docking
+                        </button>
+                        <!--描述符 隐藏/显示设置框按钮-->
+                        <button class="btn btn-primary btn-lg" type="button" data-toggle="collapse"
+                                data-target="#my_descriptors_parameter" aria-expanded="false"
+                                aria-controls="my_descriptors_parameter">
+                            Descriptor
+                        </button>
+                        <!--模型 隐藏/显示设置框按钮-->
+                        <button class="btn btn-primary btn-lg" type="button" data-toggle="collapse"
+                                data-target="#my_model_parameter_table" aria-expanded="false"
+                                aria-controls="my_model_parameter_table">
+                            Modelling
+                        </button>
+                        <!--任务提交按钮-->
+                        <button type="submit" id="submit_button" class="btn btn-success btn-lg">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <br/><br/><br/><br/>
+{% endblock %}
+<!--js-->
+{% block js %}
+    <script type="text/javascript">
+        $(function () {
+            //descriptor 判断哪些能量项被选中
+            check_show();
+            $(':checkbox').click(function () {
+                check_show();
+                //若没有描述符被选中，则禁用提交按钮
+                if ($(':checked').length === 29) {
+                    $('#submit_button').addClass('disabled');
+                }
+                //若有描述符被选中，则解除禁用
+                else {
+                    $('#submit_button').removeClass('disabled');
+                }
+            });
+            /*modelling 首次进入页面隐藏未被选中的表单*/
+            $('#algo_select :not(option:selected)').each(function () {
+                if ($(this).val() === 'Support Vector Machine') {
+                    $('#svm').hide()
+                }
+                if ($(this).val() === 'eXtreme Gradient Boosting') {
+                    $('#xgb').hide()
+                }
+                if ($(this).val() === 'Random Forest') {
+                    $('#rf').hide()
+                }
+            });
+            /*modelling 根据选择显示不同表单*/
+            hyper_table();
+            /*modelling 提交任务时删除未被选中的表单*/
+            remove_form();
+            //插件对表单验证
+            $('form').bootstrapValidator({
+
+                message: 'This value is not valid',
+                excluded: [':disabled', ':hidden'],
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-refresh'
+                },
+                fields: {
+                    //蛋白文件
+                    protein_file: {
+                        validators: {
+                            notEmpty: {
+                                message: 'Upload at least one protein file in pdb format'
+                            },
+                            file: {
+                                extension: 'pdb',
+                                type: 'application/pdb',
+                                message: 'The file is not valid',
+                                // 1024*1024 = 1MB
+                                minSize: 0.002 * 1024 * 1024,  //最小2KB
+                                maxSize: 2 * 1024 * 1024,  //最大2MB
+                            }
+                        }
+                    },
+                    //配体文件
+                    ligand_file: {
+                        validators: {
+                            notEmpty: {
+                                message: 'Upload at least one ligand file in mol2 format'
+                            },
+                            file: {
+                                extension: 'mol2',
+                                type: 'application/mol2',
+                                message: 'The file is not valid',
+                                // 1024*1024 = 1MB
+                                minSize: 0.001 * 1024 * 1024,  //最小1KB  1 个分子
+                                maxSize: 700 * 1024 * 1024,  //最大7MB 大约 110000个分子
+                            }
+                        }
+                    },
+                    //诱饵文件
+                    decoys_file: {
+                        validators: {
+                            notEmpty: {
+                                message: 'Upload at least one ligand file in mol2 format'
+                            },
+                            file: {
+                                extension: 'mol2',
+                                type: 'application/mol2',
+                                message: 'The file is not valid',
+                                // 1024*1024 = 1MB
+                                minSize: 0.001 * 1024 * 1024,  //最小1KB  1 个分子
+                                maxSize: 700 * 1024 * 1024,  //最大7MB 大约 110000个分子 
+                            }
+                        }
+                    },
+                    //测试文件
+                    test_file: {
+                        validators: {
+                            notEmpty: {
+                                message: 'Upload at least one ligand file in mol2 format'
+                            },
+                            file: {
+                                extension: 'mol2',
+                                type: 'application/mol2',
+                                message: 'The file is not valid',
+                                // 1024*1024 = 1MB
+                                minSize: 0.001 * 1024 * 1024,  //最小1KB  1 个分子
+                                maxSize: 700 * 1024 * 1024,  //最大7MB 大约 110000个分子
+                            }
+                        }
+                    },
+                    //共晶文件
+                    crystal_file: {
+                        validators: {
+                            file: {
+                                extension: 'mol2',
+                                type: 'application/mol2',
+                                message: 'The file is not valid',
+                                // 1024*1024 = 1MB
+                                minSize: 0.003 * 1024 * 1024,  //最小3KB  1 个分子
+                                maxSize: 0.008 * 1024 * 1024,  //最大8kB  1 个分子
+                            }
+                        }
+                    },
+                    //邮箱格式校验
+                    my_email: {
+                        validators: {
+                            emailAddress: {
+                                message: 'The input is not a valid email address'
+                            }
+                        }
+                    },
+                    //搜索空间校验 [10-30]
+                    space_size: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /^\d+(\.?\d+)?$/,
+                                message: 'This value is not valid'
+                            },
+                            greaterThan: {
+                                value: 10
+                            },
+                            lessThan: {
+                                value: 30
+                            }
+                        }
+                    },
+                    //exhaustiveness [1-10]
+                    exhaustiveness: {
+                        validators: {
+                            notEmpty: {},
+                            digits: {},
+                            greaterThan: {
+                                value: 1
+                            },
+                            lessThan: {
+                                value: 10
+                            }
+                        }
+                    },
+                    //num_modes [1-32]
+                    num_modes: {
+                        validators: {
+                            notEmpty: {},
+                            digits: {},
+                            greaterThan: {
+                                value: 1
+                            },
+                            lessThan: {
+                                value: 32
+                            }
+                        }
+                    },
+                    // 特征选择器 参数
+                    feature_selector_para: {
+                        validators: {
+                            notEmpty: {},
+                            digits: {},
+                            greaterThan: {
+                                value: 1 
+                            },
+                            lessThan: {
+                                value: 10000
+                            }
+                        }
+                    },
+                    //max_eval
+                    max_eval: {
+                        validators: {
+                            notEmpty: {},
+                            digits: {},
+                            greaterThan: {
+                                value: 0
+                            },
+                            lessThan: {
+                                value: 1000
+                            },
+                        }
+                    },
+                    //xgb
+                    //n_estimators
+                    n_estimators: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /^[1-9]\d{0,3}(-[1-9]\d{0,3})?$/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                    //learning rate
+                    learning_rate: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /((^0\.\d+)(-((0\.\d+)|1))?$|^1$)/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                    //subsample
+                    subsample: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /((^0\.\d+)(-((0\.\d)|1))?$|^1$)/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                    //max_depth
+                    max_depth: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /^[1-9]\d{0,3}(-[1-9]\d{0,3})?$/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                    //gamma
+                    gamma: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /^(\d{1,4}|(\d+\.\d{1,4}))?(-\d+(\.\d{1,4})?)?$/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                    //min_child_weight
+                    min_child_weight: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /^\d{1,4}(\.\d{1,4})?(-\d+(\.\d{1,4})?)?$/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                    //colsample_bytree
+                    colsample_bytree: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /((^0\.\d+)(-((0\.\d)|1))?$|^1$)/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                    //colsample_bylevel
+                    colsample_bylevel: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /((^0\.\d+)(-((0\.\d)|1))?$|^1$)/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                    //colsample_bynode
+                    colsample_bynode: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /((^0\.\d+)(-((0\.\d)|1))?$|^1$)/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                    //reg_alpha
+                    reg_alpha: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /^\d{1,4}(\.\d{1,4})?(-\d+(\.\d{1,4})?)?$/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                    //reg_lambda
+                    reg_lambda: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /^\d{1,4}(\.\d{1,4})?(-\d+(\.\d{1,4})?)?$/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                    //svm
+                    //C
+                    C: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /^(\d{1,4}|(\d+\.\d{1,4}))?(-\d+(\.\d{1,4})?)?$/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                    //rf
+                    //min_samples_leaf
+                    min_samples_leaf: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /^[1-9]\d{0,3}(-[1-9]\d{0,3})?$/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                    //min_samples_split
+                    min_samples_split: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /^[2-9]\d{0,3}(-[1-9]\d{0,3})?$/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                    //min_impurity_decrease
+                    min_impurity_decrease: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /^\d+(\.\d{1,4})?(-\d+(\.\d{1,4})?)?$/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                    //max_features
+                    max_features: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /((^sqrt$)|(^log2$)|(^1\d{0,4}?(-1\d{0,4}?)?$))|(^sqrt-log2$)|(^log2-sqrt$)/,
+                                message: 'This value is not valid'
+                            },
+                        }
+                    },
+                }
+            });
+        });
+
+
+        //descriptor
+        // 隐藏所有能量项，只显示被勾选的打分函数的能量项
+        function check_show() {
+            //移除所有已经添加的td
+            $('#my_chosen_descriptors_content td').remove();
+            //动态添加td
+            $(':checked').each(function () {
+                <!--循环判断-->
+                {% for sf in sfs %}
+                    <!--动态载入描述符   sf.0 为函数名， sf.1为能量项列表-->
+                    if ($(this).val() === "{{ sf.0 }}") {
+                        var final = "{% for descriptors in  sf.1  %}\
+                                        {% if descriptors != 'name' %}\
+                                            <td style=\" white-space:nowrap\">{{ descriptors }}</td>\
+                                        {% endif %}\
+                                    {% endfor %}";
+                        $('#my_chosen_descriptors_content').append(final);
+                    }
+                {% endfor %}
+            });
+            //计算td的数量（即描述符的数量）
+            let td_number = $('#my_chosen_descriptors_content').children().length;
+            //依次检查 NNscore , RF Element , RF Sybyl , IFP , PLEC , SILIRID , SPLIF , ECFP ,PubchemFP
+            //数字要减一，因为checkbox加了1
+            if ($('[name="nn"]').is(':checked')) {
+                td_number += 347;
+            }
+            if ($('[name="ele"]').is(':checked')) {
+                td_number += 485;
+            }
+            if ($('[name="syb"]').is(':checked')) {
+                td_number += 5045;
+            }
+            if ($('[name="ifp"]').is(':checked')) {
+                td_number += 1023;
+            }
+            if ($('[name="ple"]').is(':checked')) {
+                td_number += 1023;
+            }
+            if ($('[name="sil"]').is(':checked')) {
+                td_number += 167;
+            }
+            if ($('[name="spl"]').is(':checked')) {
+                td_number += 1023;
+            }
+            if ($('[name="ecf"]').is(':checked')) {
+                td_number += 1023;
+            }
+            if ($('[name="pad"]').is(':checked')) {
+                td_number += 880;
+            }
+            //把数量赋予badge
+            $('#my_descriptors_number').text('number = ' + td_number);
+        }
+
+        /*modelling 根据选择显示不同表单*/
+        function hyper_table() {
+            $('#algo_select').click(function () {
+                $('.my_hyper').hide();
+                $('#my_all_modelling').show();
+                var selected = $('#algo_select option:selected').val();
+                if (selected === 'Support Vector Machine') {
+                    $('#svm').show()
+                }
+                if (selected === 'eXtreme Gradient Boosting') {
+                    $('#xgb').show()
+                }
+                if (selected === 'Random Forest') {
+                    $('#rf').show()
+                }
+                if (selected === 'No Modelling') {
+                    $('#my_all_modelling').hide()
+                }
+            })
+        }
+
+        /*modelling 提交任务时删除未被选中的表单*/
+        function remove_form() {
+            $('#submit_button').click(function () {
+                $('#algo_select :not(option:selected)').each(function () {
+                    if ($(this).val() === 'Support Vector Machine') {
+                        $('#svm').remove()
+                    }
+                    if ($(this).val() === 'eXtreme Gradient Boosting') {
+                        $('#xgb').remove()
+                    }
+                    if ($(this).val() === 'Random Forest') {
+                        $('#rf').remove()
+                    }
+                });
+            })
+        }
+    </script>
+{% endblock %}
+

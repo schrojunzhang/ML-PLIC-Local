@@ -1,0 +1,621 @@
+<!--继承模板-->
+{% extends 'descriptors/base.html' %}
+
+<!--修改标题-->
+{% block title %}
+    <title>docking</title>
+{% endblock %}
+<!--修改内容-->
+<!--巨幕-->
+{% block jumbotron %}
+    <h1 style="margin-top: 10px">Docking</h1>
+    <p class="text-justify">
+        In this module, users can prepare the structures of protein and ligands, and dock the ligands into the pocket of
+        the receptor.
+        <br><br>Structure preparation is achieved using <strong><em>AutoDockTools</em></strong>. Two docking
+        programs (<strong><em>QuickVina</em></strong> and <strong><em>Smina</em></strong>) are provided for ligand
+        docking.
+        <strong><em>QuickVina</em></strong> is faster than <strong><em>Smina</em></strong> (about 2 fold)
+        without compromising accuracy. Therefore, <strong><em>QuickVina</em></strong> is set as the default docking
+        program and recommended when
+        a great number of ligands are waiting to be docked.
+        <br><br>To figure out where the biding site is, four methods are offered:
+    <ul style="font-size: 18px">
+        <li>
+            Reference ligand (default & recommended): upload a ligand whose coordinates is in the receptor pocket;
+        </li>
+        <li>
+            Pocket Residues: input the name and sequence number of the pocket residues to define the location of pocket
+            (actually, inputting sequence number only is also enough for locating);
+        </li>
+        <li>
+            Coordinates (X, Y, Z): input the coordinates of the binding site's center;
+        </li>
+        <li>
+            None: input nothing and the server will take the last ligand in the uploaded ligand database as a reference
+            ligand.
+        </li>
+    </ul>
+    </p>
+{% endblock %}
+<!--主体内容-->
+{% block content %}
+    <!--任务提交-->
+    <!--表单-->
+    <form class="form-horizontal" action="{% url 'cal_docking:docking' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <!--基本配置行-->
+        <div class="row">
+            <!--总面板-->
+            <div class="panel panel-primary">
+                <!--上传文件标题-->
+                <div class="panel-heading text-center">
+                    <h3 style="margin-bottom: 0;margin-top: 0">Docking Panel</h3>
+                </div>
+                <div class="panel-body" style="padding-top: 30px;border-bottom: 1px solid #ddd">
+                    <!--左半部分-->
+                    <div class="col-sm-6">
+                        <!--上传蛋白分子表单-->
+                        <div class="form-group">
+                            <!--标签宽度-->
+                            <label for="p-file" class="col-sm-3 control-label">Protein</label>
+                            <!--选择框宽度-->
+                            <div class="col-sm-9">
+                                <!--在首尾加入符号-->
+                                <div class="input-group">
+                                    <!--加入符号-->
+                                    <div class="input-group-addon" style="width: 60px;">.pdb</div>
+                                    <!--文件框-->
+                                    <input id='location' class="form-control" onclick="$('#p-file').click();">
+                                    <!--连接到选择文件按钮-->
+                                    <label class="input-group-btn">
+                                        <input type="button" id="i-check" value="Choose" class="btn btn-primary"
+                                               onclick="$('#p-file').click();">
+                                    </label>
+                                </div>
+                            </div>
+                            <!--选择文件按钮-->
+                            <input class="form-control my_hide" type="file" name="protein_file" id='p-file'
+                                   accept=".pdb"
+                                   onchange="$('#location').val($('#p-file').val());">
+                        </div>
+                        <!--上传配体分子表单-->
+                        <div class="form-group">
+                            <!--标签宽度-->
+                            <label for="l-file" class="col-sm-3 control-label">Ligand</label>
+                            <!--选择框宽度-->
+                            <div class="col-sm-9">
+                                <!--在首尾加入符号-->
+                                <div class="input-group">
+                                    <!--加入符号-->
+                                    <div class="input-group-addon" style="width: 60px">.mol2</div>
+                                    <!--文件框-->
+                                    <input id='lig_location' class="form-control" onclick="$('#l-file').click();">
+                                    <!--连接到选择文件按钮-->
+                                    <label class="input-group-btn">
+                                        <input type="button" id="i-check" value="Choose" class="btn btn-primary"
+                                               onclick="$('#l-file').click();">
+                                    </label>
+                                </div>
+                            </div>
+                            <!--选择文件按钮-->
+                            <input class="form-control my_hide" type="file" name="ligand_file" id='l-file'
+                                   accept=".mol2"
+                                   onchange="$('#lig_location').val($('#l-file').val());">
+                        </div>
+                        <!--上传晶体分子表单-->
+                        <div class="form-group">
+                            <!--标签宽度-->
+                            <label for="c-file" class="col-sm-3 control-label">Binding Site
+                                <em>(optional)</em></label>
+                            <!--选择框宽度-->
+                            <div class="col-sm-9">
+                                <!--在首尾加入符号-->
+                                <div class="input-group" id="binding_site">
+                                    <!--加入符号-->
+                                    <div class="input-group-addon binding_sites" style="width: 60px">.mol2</div>
+                                    <!--文件框-->
+                                    <input id='cry_location' class="form-control binding_sites"
+                                           onclick="$('#c-file').click();">
+                                    <!--连接到选择文件按钮-->
+                                    <label class="input-group-btn">
+                                        <!--传文件按钮-->
+                                        <button type="button" class="btn btn-primary" aria-label="Left Align"
+                                                id="crystal_uplpad"
+                                                onclick="$('#c-file').click();">
+                                            <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span>
+                                        </button>
+                                        <!--上传文件-->
+                                        <input type="button" id="i-check" value="Choose" class="btn btn-primary"
+                                               style="display: none"
+                                               onclick="$('#c-file').click();">
+                                    </label>
+                                    <!--选择获取活性位点坐标的方式-->
+                                    <label class="input-group-btn">
+                                        <button type="button" class="btn btn-success dropdown-toggle"
+                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a id="provide_crystal">Reference Ligand</a></li>
+                                            <li><a id="provide_res">Pocket Residues</a></li>
+                                            <li><a id="provide_xyz">Coordinates (X,Y,Z)</a></li>
+                                        </ul>
+                                    </label>
+                                </div>
+                            </div>
+                            <!--选择文件按钮-->
+                            <input class="form-control my_hide" type="file" name="crystal_file" id='c-file'
+                                   accept=".mol2"
+                                   onchange="$('#cry_location').val($('#c-file').val());">
+                        </div>
+                    </div>
+                    <!--右半部分-->
+                    <div class="col-sm-6">
+                        <!--上传是否对接表单-->
+                        <div class="form-group">
+                            <!--标签宽度-->
+                            <label for="c-file" class="col-sm-3 control-label">Docking</label>
+                            <!--选择框宽度-->
+                            <div class="col-sm-9">
+                                <!--在首尾加入符号-->
+                                <select class="form-control" id='dock_select' name="whether_dock">
+                                    <option>QuickVina</option>
+                                    <option>Smina</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!--Email-->
+                        <div class="form-group">
+                            <!--标签宽度-->
+                            <label for="l-file" class="col-sm-3 control-label">Email <em>(optional)</em></label>
+                            <!--选择框宽度-->
+                            <div class="col-sm-9">
+                                <!--在首尾加入符号-->
+                                <div class="input-group" style="width: 100%">
+                                    <!--文件框-->
+                                    <input type="text" class="form-control" placeholder="xxx@zju.edu.cn"
+                                           aria-describedby="basic-addon2" name="my_email">
+                                    <!--加入符号-->
+                                    <div class="input-group-addon" style="width: 73px">@</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--参数配置-->
+                <!--蛋白准备 参数表-->
+                <!--预处理面板-->
+                <div class="collapse in" id="my_docking_parameter">
+                    <div class="table-responsive">
+                        <table class="table table-hover " style="margin-bottom: 0px">
+                            <!--标题-->
+                            <thead>
+                            <tr>
+                                <th style="width: 15%">type</th>
+                                <th style="width: 20%">parameter</th>
+                                <th style="width: 30%">description</th>
+                            </tr>
+                            </thead>
+                            <!--内容-->
+                            <tbody>
+                            <!--蛋白-->
+                            <!--修复-->
+                            <tr>
+                                <td>protein repair</td>
+                                <td>
+                                    <select class="form-control" name="protein_repair">
+                                        <option>bonds_hydrogens</option>
+                                        <option>bonds</option>
+                                        <option>hydrogens</option>
+                                        <option>checkhydrogens</option>
+                                        <option>None</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <p class="text-justify ">
+                                        repair protein structure
+                                        <!--蛋白修复详细介绍链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_protein_repair" aria-expanded="true"
+                                           aria-controls="my_detail_protein_repair">
+                                            [detail...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--蛋白修复详细介绍-->
+                            <tr class="collapse" id="my_detail_protein_repair">
+                                <td colspan="3">
+                                    <p><strong>bonds_hydrogens</strong>: build bonds and add hydrogens;</p>
+                                    <p><strong>bonds</strong>: build a single bond from each atom with no bonds to
+                                        its closest neighbor;</p>
+                                    <p><strong>hydrogens</strong>: add hydrogens;</p>
+                                    <p><strong>checkhydrogens</strong>: add hydrogens only if there are none
+                                        already;</p>
+                                    <p><strong>None</strong>: do not make any repairs;</p>
+                                </td>
+                            </tr>
+                            <!--删除非标准残基-->
+                            <tr>
+                                <td>del_nonstd_residue</td>
+                                <td>
+                                    <select class="form-control" name="protein_delchain">
+                                        <option>no</option>
+                                        <option>yes</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <p class="text-justify ">
+                                        delete every non-standard residue
+                                        <!--删除非标准残基详细介绍链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_protein_delchain" aria-expanded="true"
+                                           aria-controls="my_detail_protein_delchain">
+                                            [detail...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--删除非标准残基详细介绍-->
+                            <tr class="collapse" id="my_detail_protein_delchain">
+                                <td colspan="3">
+                                    <p><strong>yes</strong>: delete any residue whose name is not in
+                                        ['CYS', 'ILE', 'SER', 'VAL', 'GLN', 'LYS', 'ASN',
+                                        'PRO', 'THR', 'PHE', 'ALA', 'HIS', 'GLY', 'ASP',
+                                        'LEU', 'ARG', 'TRP', 'GLU', 'TYR','MET'];</p>
+                                    <p><strong>no</strong>: no deletion;</p>
+                                </td>
+                            </tr>
+                            <!--删除无用原子-->
+                            <tr>
+                                <td>protein cleanup</td>
+                                <td>
+                                    <select class="form-control" name="protein_cleanup">
+                                        <option>standard</option>
+                                        <option>non-polar hydrogens</option>
+                                        <option>lone pairs</option>
+                                        <option>water residues</option>
+                                        <option>chains</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <p class="text-justify">
+                                        remove necessary atoms
+                                        <!--删除无用原子详细介绍链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_protein_cleanup" aria-expanded="true"
+                                           aria-controls="my_detail_protein_cleanup">
+                                            [detail...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--删除无用原子详细介绍-->
+                            <tr class="collapse" id="my_detail_protein_cleanup">
+                                <td colspan="3">
+                                    <p><strong>non-polar hydrogens</strong>: merge charges and remove non-polar
+                                        hydrogens;</p>
+                                    <p><strong>lone pairs</strong>: merge charges and remove lone pairs;</p>
+                                    <p><strong>water residues</strong>: remove water residues;</p>
+                                    <p><strong>chains</strong>: remove chains composed entirely of residues of
+                                        types other than the standard 20 amino acids;</p>
+                                    <p><strong>standard</strong>: all the options mentioned above;</p>
+                                </td>
+                            </tr>
+                            <!--配体-->
+                            <!--修复-->
+                            <tr>
+                                <td>ligand repair</td>
+                                <td>
+                                    <select class="form-control" name="ligand_repair">
+                                        <option>bonds_hydrogens</option>
+                                        <option>bonds</option>
+                                        <option>hydrogens</option>
+                                        <option>None</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <p class="text-justify">
+                                        repair ligand structure
+                                        <!--修复配体详细介绍链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_ligand_repair" aria-expanded="true"
+                                           aria-controls="my_detail_ligand_repair">
+                                            [detail...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--配体修复详细介绍-->
+                            <tr class="collapse" id="my_detail_ligand_repair">
+                                <td colspan="3">
+                                    <p><strong>bonds_hydrogens</strong>: adds hydrogens and builds bonds to any
+                                        non-bonded atoms;</p>
+                                    <p><strong>bonds</strong>: build a single bond from each atom with no bonds to
+                                        its closest neighbor;</p>
+                                    <p><strong>hydrogens</strong>: add hydrogens;(PyBabel is used for adding all
+                                        hydrogens, not just polar-hydrogens;)</p>
+                                </td>
+                            </tr>
+                            <!--加电荷-->
+                            <tr>
+                                <td>add_charge</td>
+                                <td>
+                                    <select class="form-control" name="ligand_charge">
+                                        <option>yes</option>
+                                        <option>no</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <p class="text-justify">
+                                        add Gasteiger partial atomic charges
+                                        <!--修复配体详细介绍链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_ligand_charge" aria-expanded="true"
+                                           aria-controls="my_detail_ligand_charge">
+                                            [detail...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--加电荷详细介绍-->
+                            <tr class="collapse" id="my_detail_ligand_charge">
+                                <td colspan="3">
+                                    <p><strong>yes</strong>: add Gasteiger partial atomic charges;</p>
+                                    <p><strong>no</strong>: If this option is used, the input ligand should already
+                                        have partial atomic charges;</p>
+                                </td>
+                            </tr>
+                            <!--删除无用原子-->
+                            <tr>
+                                <td>ligand cleanup</td>
+                                <td>
+                                    <select class="form-control" name="ligand_cleanup">
+                                        <option>standard</option>
+                                        <option>non-polar hydrogens</option>
+                                        <option>lone pairs</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <p class="text-justify">
+                                        remove necessary atoms
+                                        <!--配体清除无用原子详细介绍链接-->
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                           href="#my_detail_ligand_cleanup" aria-expanded="true"
+                                           aria-controls="my_detail_ligand_cleanup">
+                                            [detail...]
+                                        </a>
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--配体清除无用原子详细介绍-->
+                            <tr class="collapse" id="my_detail_ligand_cleanup">
+                                <td colspan="3">
+                                    <p><strong>non-polar hydrogens</strong>: merges non-polar hydrogens by adding
+                                        the charge of each non-polar hydrogen to the carbon to which it is bonded
+                                        and then removes the non-polar hydrogen from the ligand molecule;</p>
+                                    <p><strong>lone pairs</strong>: merges lone-pairs by adding the charge of each
+                                        lone pair to the atom to which it is 'bonded' and then removes the
+                                        lone-pair;</p>
+                                    <p><strong>standard</strong>: all the options mentioned above;</p>
+                                </td>
+                            </tr>
+                            <!--对接参数-->
+                            <!--搜索空间大小-->
+                            <tr>
+                                <td>search_space_size</td>
+                                <td>
+                                    <!--增加form-group 用于表单验证feedback-->
+                                    <div class="form-group" style="margin: 0">
+                                        <!--在首尾加入符号-->
+                                        <div class="input-group" style="width: 100%">
+                                            <!--文件框-->
+                                            <input type="text" class="form-control" value="18.75"
+                                                   aria-describedby="basic-addon2" name="space_size">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Float</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify">this value restricts where the movable atoms should
+                                        lie</p>
+                                </td>
+                            </tr>
+                            <!--搜索时间-->
+                            <tr>
+                                <td>exhaustiveness</td>
+                                <td>
+                                    <!--增加form-group 用于表单验证feedback-->
+                                    <div class="form-group" style="margin: 0">
+                                        <!--在首尾加入符号-->
+                                        <div class="input-group" style="width: 100%">
+                                            <!--文件框-->
+                                            <input type="text" class="form-control" value="8"
+                                                   aria-describedby="basic-addon2" name="exhaustiveness">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Integer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify">
+                                        exhaustiveness of the global search (roughly proportional to time)
+                                    </p>
+                                </td>
+                            </tr>
+                            <!--产生构象数-->
+                            <tr>
+                                <td>num_binding</td>
+                                <td>
+                                    <!--增加form-group 用于表单验证feedback-->
+                                    <div class="form-group" style="margin: 0">
+                                        <!--在首尾加入符号-->
+                                        <div class="input-group" style="width: 100%">
+                                            <!--文件框-->
+                                            <input type="text" class="form-control" value="1"
+                                                   aria-describedby="basic-addon2" name="num_modes">
+                                            <!--加入符号-->
+                                            <div class="input-group-addon" style="width: 90px">Integer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-justify">maximum number of binding modes to generate</p>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!--example-->
+                <div class="panel-footer" style="font-size: 18px;padding: 12px 18px">
+                    <strong>Example:</strong>
+                    <a href="{% url 'cal_queue:example_download' 'protein' %}">Protein</a>
+                    |
+                    <a href="{% url 'cal_queue:example_download' 'ligand' %}">Ligand</a>
+                    |
+                    <a href="{% url 'cal_queue:example_download' 'crystal_ligand' %}">Reference Ligand</a>
+                    |
+                    <a href="{% url 'cal_queue:result_show' "b'\x04Eq-v\xda\x93\x8d\x8eO\x0f\xb3\x85\x9a\x85\xa2'cadd" %}">Result</a>
+                </div>
+            </div>
+        </div>
+        <br/><br/>
+        <!--提交任务行-->
+        <div class="row">
+            <!--提交任务-->
+            <div class="col-sm-6 col-sm-offset-3 text-center">
+                <div class="btn-group" role="group" aria-label="...">
+                    <!--隐藏/显示设置框按钮-->
+                    <button class="btn btn-primary btn-lg" type="button" data-toggle="collapse"
+                            data-target="#my_docking_parameter" aria-expanded="false"
+                            aria-controls="my_docking_parameter">
+                        Settings
+                    </button>
+                    <!--任务提交按钮-->
+                    <button type="submit" id="submit_button" class="btn btn-success btn-lg">Submit</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <br/><br/><br/><br/>
+{% endblock %}
+<!--js-->
+{% block js %}
+    <script type="text/javascript">
+        $(function () {
+            //插件对表单验证
+            $('form').bootstrapValidator({
+
+                message: 'This value is not valid',
+                excluded: [':disabled', ':hidden'],
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-refresh'
+                },
+                fields: {
+                    //蛋白文件
+                    protein_file: {
+                        validators: {
+                            notEmpty: {
+                                message: 'Upload at least one protein file in pdb format'
+                            },
+                            file: {
+                                extension: 'pdb',
+                                type: 'application/pdb',
+                                message: 'The file is not valid',
+                                // 1024*1024 = 1MB
+                                minSize: 0.002 * 1024 * 1024,  //最小2KB
+                                maxSize: 2 * 1024 * 1024,  //最大2MB
+                            }
+                        }
+                    },
+                    //配体文件 
+                    ligand_file: {
+                        validators: {
+                            notEmpty: {
+                                message: 'Upload at least one ligand file in mol2 format'
+                            },
+                            file: {
+                                extension: 'mol2',
+                                type: 'application/mol2',
+                                message: 'The file is not valid',
+                                // 1024*1024 = 1MB
+                                minSize: 0.003 * 1024 * 1024,  //最小3KB  1 个分子
+                                maxSize: 700 * 1024 * 1024,  //最大700MB 大约 110000个分子
+                            }
+                        }
+                    },
+                    //共晶文件
+                    crystal_file: {
+                        validators: {
+                            file: {
+                                extension: 'mol2',
+                                type: 'application/mol2',
+                                message: 'The file is not valid',
+                                // 1024*1024 = 1MB
+                                minSize: 0.003 * 1024 * 1024,  //最小3KB  1 个分子
+                                maxSize: 0.008 * 1024 * 1024,  //最大8kB  1 个分子
+                            }
+                        }
+                    },
+                    //邮箱格式校验
+                    my_email: {
+                        validators: {
+                            emailAddress: {
+                                message: 'The input is not a valid email address'
+                            }
+                        }
+                    },
+                    //搜索空间校验 [10-30]
+                    space_size: {
+                        validators: {
+                            notEmpty: {},
+                            regexp: {
+                                regexp: /^\d+(\.?\d+)?$/,
+                                message: 'This value is not valid'
+                            },
+                            greaterThan: {
+                                value: 10
+                            },
+                            lessThan: {
+                                value: 30
+                            }
+                        }
+                    },
+                    //exhaustiveness [1-10]
+                    exhaustiveness: {
+                        validators: {
+                            notEmpty: {},
+                            digits: {},
+                            greaterThan: {
+                                value: 1
+                            },
+                            lessThan: {
+                                value: 10
+                            }
+                        }
+                    },
+                    //num_modes [1-32]
+                    num_modes: {
+                        validators: {
+                            notEmpty: {},
+                            digits: {},
+                            greaterThan: {
+                                value: 1
+                            },
+                            lessThan: {
+                                value: 32
+                            }
+                        }
+                    },
+                }
+            });
+
+        });
+    </script>
+{% endblock %}
+

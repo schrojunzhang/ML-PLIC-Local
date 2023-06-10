@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+{% load static %}
+{% block static_tag %}
+{% endblock %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--引入bootstrap css-->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
+    <!--引入jqury js-->
+    <script type="text/javascript" src="{% static 'js/jquery-3.5.1.min.js' %}"></script>
+    <!--引入bootstrap js-->
+    <script src="{% static 'js/bootstrap.js' %}"></script>
+    <!--引入validator js-->
+    <script type="text/javascript" src="{% static 'js/bootstrapValidator.min.js' %}"></script>
+    <!--引入validator css-->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrapValidator.min.css' %}">
+    <!--自定义样式-->
+    <style type="text/css">
+        /*表单验证图标*/
+        .form-control-feedback {
+            padding-right: 100px;
+        }
+
+        /*表单验证文字*/
+        .help-block {
+            text-align: right;
+            padding-right: 100px;
+        }
+
+        /*自定义隐藏格式*/
+        .my_hide {
+            width: 0;
+            border: none;
+            height: 0;
+            position: absolute;
+            visibility: hidden
+        }
+    </style>
+    <!--允许标题可修改-->
+    {% block title %}
+        <title>ML-PLIC</title>
+    {% endblock %}
+</head>
+<body>
+<!--导航栏-->
+<nav class="navbar navbar-default" style="margin-bottom: 0; font-size: 20px">
+    <div class="container">
+        <!-- logo -->
+        <div class="navbar-header">
+            <!--屏幕缩小时菜单按钮-->
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--logo-->
+            <a class="navbar-brand" href="#" style="font-size: 28px; margin-top: 3.5px">ML-PLIC</a>
+            <p class="navbar-text">ML-based protein-ligand interaction capturer</p>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right" style="margin-top: 3.5px">
+                <!--首页-->
+                <li><a href="{% url 'cal_pipline:pipline' %}">Home</a></li>
+                <!--Services-->
+                <li role="presentation" class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true"
+                       aria-expanded="false">
+                        Services <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu my_nav_dropdown_menu" style="font-size:20px;min-width: 60px">
+                        <li ><a href="{% url 'cal_docking:docking' %}" style="padding: 1px 10px;">Docking</a></li>
+                        <li><a href="{% url 'cal_descriptors:descriptors' %}" style="padding: 1px 10px;">Descriptors</a></li>
+                        <li><a href="{% url 'cal_model:modelling' %}" style="padding: 1px 10px;">Modelling</a></li>
+                        <li><a href="{% url 'cal_screening:screening' %}" style="padding: 1px 10px;">Screening</a></li>
+                        <li><a href="{% url 'cal_pipline:pipline' %}" style="padding: 1px 10px;">Pipeline</a></li>
+                    </ul>
+                </li>
+                <!--队列-->
+                <li><a href="{% url 'cal_queue:queue' %}">Queue</a></li>
+                <!--帮助-->
+                <li><a href="{% url 'cal_queue:help' %}">Help</a></li>
+                <!--paper-->
+                <li><a href="{% url 'cal_queue:paper' %}">Paper</a></li>
+                <!--Contact-->
+                <li><a href="{% url 'cal_queue:contact' %}">Contact</a></li>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+<!--内容-->
+<!--可替换内容-->
+{% block global_content %}
+{% endblock %}
+<!--footer-->
+<nav class="navbar-default navbar-fixed-bottom">
+    <div class="container">
+        <div class="col-sm-10 col-sm-offset-2">
+            <!-- 版权 -->
+            <a class="navbar-brand" style="font-size: 16px">Copyright © 2019-2020 Tingjun Hou's Group All Rights
+                Reserved | Total Views:
+                <!--访问量-->
+                {{ total_viewed }}
+            </a>
+            <!--ip插件-->
+            <span style="display: none"><script type="text/javascript"
+                                                src="//rf.revolvermaps.com/0/0/3.js?i=5z9d6s1pvmv&amp;b=0&amp;s=40&amp;m=2&amp;cl=ffffff&amp;co=010020&amp;cd=aa0000&amp;v0=60&amp;v1=60&amp;r=1"
+                                                async="async"></script>
+            </span>
+        </div>
+    </div>
+</nav>
+</body>
+<!--修改js-->
+{% block js %}
+{% endblock %}
+<script type="text/javascript">
+    /*页面加载即执行*/
+    $(function () {
+        /*根据页面URL激活导航栏*/
+        var page_url = window.location.pathname;
+        $('.my_tab li').each(function () {
+            if ($(this).children('a').attr('href') === page_url) {
+                $(this).addClass('active')
+            }
+        });
+    });
+    /*鼠标移动到菜单栏自动显示*/
+    hoverMenuShow();
+    //获取活性口袋的方法
+    //提供坐标
+    $('#provide_xyz').click(function () {
+        //禁止文件上传按钮
+        $('#crystal_uplpad').attr('disabled', 'disabled');
+        //移除晶体结构的输入框
+        $('.binding_sites').remove();
+        //增加xyz输入框
+        var input_box = '                                    <!--加入符号-->\n' +
+            '                                    <div class="input-group-addon binding_sites" style="width: 60px">x,y,z</div>\n' +
+            '                                    <!--文件框-->\n' +
+            '                                    <input id=\'site_xyz\' type="text" class="form-control binding_sites"\n' +
+            '                                           aria-describedby="basic-addon2" name="site_xyz" placeholder="16, 14, 3.8">';
+        $('#binding_site').prepend(input_box);
+    });
+    //提供参考配体
+    $('#provide_crystal').click(function () {
+        //启用文件上传按钮
+        $('#crystal_uplpad').removeAttr('disabled');
+        //移除晶体结构的输入框
+        $('.binding_sites').remove();
+        //增加xyz输入框
+        var input_box = '                                    <!--加入符号-->\n' +
+            '                                    <div class="input-group-addon binding_sites" style="width: 60px">.mol2</div>\n' +
+            '                                    <!--文件框-->\n' +
+            '                                    <input id=\'cry_location\' class="form-control binding_sites"\n' +
+            '                                           onclick="$(\'#c-file\').click();">';
+        $('#binding_site').prepend(input_box);
+    });
+    //提供口袋残基
+    $('#provide_res').click(function () {
+        //禁止文件上传按钮
+        $('#crystal_uplpad').attr('disabled', 'disabled');
+        //移除晶体结构的输入框
+        $('.binding_sites').remove();
+        //增加xyz输入框
+        var input_box = '                                    <!--加入符号-->\n' +
+            '                                    <div class="input-group-addon binding_sites" style="width: 60px">.res</div>\n' +
+            '                                    <!--文件框-->\n' +
+            '                                    <input id=\'site_res\' type="text" class="form-control binding_sites"\n' +
+            '                                           aria-describedby="basic-addon2" name="site_res" placeholder="HIS_14, THR_83, PHE_150">';
+        $('#binding_site').prepend(input_box);
+    });
+
+    function hoverMenuShow() {
+        let $btn = $('.dropdown');
+        let $menu = $('.my_nav_dropdown_menu');
+        // let $menu = $('.dropdown-menu');
+
+        // 移入显示 原理是手动给 dropdown-menu 加入一个显示类
+        $btn.mouseover(function () {
+            $menu.addClass('show');
+        });
+
+        /*
+        移出消失 原理是手动删除 dropdown-menu 的类
+
+           这里需要注意两个细节：
+           1、当我们移入下边的菜单栏的时候我们不让菜单栏消失，这里我们使用定时器。让它延迟100毫秒消失，如果在100毫秒内移入菜单栏, 那么我们就关闭定时器，dropdown-menu就不会消失
+           2、当我们从下边的菜单栏再次移入按钮的时候，也不能让菜单栏消失。原理同上
+
+        */
+        $btn.mouseout(function () {
+            $hide = setTimeout(function () {
+                // 移入菜单栏，取消隐藏
+                $menu.mouseover(function () {
+                    clearTimeout($hide);
+                });
+                // 再次移入按钮，取消定时器，不让其隐藏。
+                $btn.mouseover(function () {
+                    clearTimeout($hide);
+                });
+                $menu.removeClass('show');
+            }, 100);
+        })
+    }
+</script>
+</html>

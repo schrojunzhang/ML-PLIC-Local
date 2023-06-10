@@ -1,0 +1,8 @@
+# ML-PLIC-Local
+Cracking the entangling code of protein-ligand interaction (PLI) is of great importance to structure-based drug design and discovery. Different physical and biochemical representations can be used to describe PLI such as energy terms and interaction fingerprints, which can be analyzed by machine learning (ML) algorithms to create ML-based scoring functions (MLSFs). Here, we propose the ML-based PLI capturer (ML-PLIC), a web platform that automatically characterizes PLI and generates MLSFs to identify the potential binders of a specific protein target through virtual screening (VS). ML-PLIC comprises five modules, including Docking for ligand docking, Descriptors for PLI generation, Modelling for MLSF training, Screening for VS and Pipeline for the integration of the aforementioned functions. We validated the MLSFs constructed by ML-PLIC in three benchmark datasets (DUD-E, AD and TocoDecoy), demonstrating accuracy outperforming traditional docking tools and competitive performance to the deep learning-based SF, and provided a case study of the Serine/threonine-protein kinase WEE1 in which MLSFs were developed by using the ML-based VS pipeline in ML-PLIC. Underpinning the latest version of ML-PLIC is a powerful platform that incorporates physical and biological knowledge about PLI, leveraging PLI characterization and MLSF generation into the design of structure-based VS pipeline. The ML-PLIC web platform is now freely available at http://cadd.zju.edu.cn/plic/.
+
+## Basic Usage
+```
+python manage.py runserver 0:8000
+```
+## for detail information, please wait for updating

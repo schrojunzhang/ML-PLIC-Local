@@ -1,0 +1,535 @@
+<!--继承模板-->
+{% extends 'queue/base.html' %}
+<!--导入static-->
+{% block static_tag %}
+    {% load static %}
+{% endblock %}
+<!--修改标题-->
+{% block title %}
+    <title>Result</title>
+{% endblock %}
+<!--修改内容-->
+<!--主体内容-->
+{% block global_content %}
+    <!--容器-->
+    <div class="container">
+        <br/><br/>
+        <!--第一行 巨幕 结果文件下载链接-->
+        <div class="row">
+            <!--巨幕-->
+            <div class="jumbotron" style="padding: 24px 60px">
+                <h1>Welcome!</h1>
+                <p>This is the result page for {{ job_id }}</p>
+                <p><a class="btn btn-primary btn-lg" role="button" id="my_download_btn">Download Result <span
+                        class="glyphicon glyphicon-cloud-download" aria-hidden="true"></span></a></p>
+            </div>
+        </div>
+        <!--判断任务类型-->
+        <!--建模-->
+        {% if job_type == 'modelling' or job_type == 'pipeline' %}
+            <div class="row"><!--行-->
+                <div class="panel panel-default"><!--面板-->
+                    <!--数据-->
+                    <div class="panel-heading text-center">
+                        <h3 style="margin-bottom: 0;margin-top: 0">Data</h3>
+                    </div>
+                    <!--评价指标数据-->
+                    <div class="table-responsive">
+                        <table class="table table-hover table-condensed">
+                            <tr><!-- 数据表 标题 -->
+                                <th style="width: 11.1%;">Metrics</th> <!--评价指标-->
+                                <th style="width: 11.1%;">True Negative</th>
+                                <th style="width: 11.1%;">False Positive</th>
+                                <th style="width: 11.1%;">False Negative</th>
+                                <th style="width: 11.1%;">True Positive</th>
+                                <th style="width: 11.1%;">Accuracy</th>
+                                <th style="width: 11.1%;">ROC_AUC</th>
+                                <th style="width: 11.1%;">F1_Score</th>
+                                <th style="width: 11.1%;">EF_1%</th>
+                            </tr>
+                            <!-- 数据表 评价指标数据 -->
+                            <tr>
+                                <td>Value</td><!--评价数值-->
+                                <td>{{ model_metrics.0 }}</td>
+                                <td>{{ model_metrics.1 }}</td>
+                                <td>{{ model_metrics.2 }}</td>
+                                <td>{{ model_metrics.3 }}</td>
+                                <td>{{ model_metrics.4|floatformat:2 }}</td>
+                                <td>{{ model_metrics.5|floatformat:2 }}</td>
+                                <td>{{ model_metrics.6|floatformat:2 }}</td>
+                                <td>{{ model_metrics.7|floatformat:2 }}</td>
+                            </tr>
+                            <!--超参数-->
+                            <tr><!-- 超参数名 标题 -->
+                                <th>Hyper-parameter</th><!-- 行标题 -->
+                                {% for parameter_name in parameter_names %}
+                                    {% if forloop.counter <= 7 %}
+                                        <!--展示前七项-->
+                                        <th style="width: 11.1%;">{{ parameter_name|truncatechars:16 }}</th>
+                                    {% elif forloop.counter == 8 %}
+                                        <!--第八项显示按钮-->
+                                        <th style="width: 11.1%;">More</th>
+                                    {% endif %}
+                                {% endfor %}
+                                {# 若参数较少，不能填满表格，则添加空表格 #}
+                                {% if parameter_names|length < 8 %}
+                                    <th colspan="{% widthratio parameter_names|length|add:-8 1 -1 %}"
+                                        style="width: 11.1%;">
+                                        ...
+                                    </th>
+                                {% endif %}
+                            </tr>
+                            <!-- 数据表 超参数数据 -->
+                            <tr>
+                                <td>Value</td><!-- 行值 -->
+                                {% for parameter in parameters %}
+                                    {% if forloop.counter <= 7 %}
+                                        <!--展示前七项-->
+                                        <td>{{ parameter|floatformat:'-2' }}</td>
+                                    {% elif forloop.counter == 8 %}
+                                        <!--第八项显示按钮-->
+                                        <td>
+                                            <!--折叠框按钮-->
+                                            <button class="btn btn-danger btn-xs" type="button" data-toggle="collapse"
+                                                    data-target="#my_total_hyperparameters" aria-expanded="false"
+                                                    aria-controls="my_total_hyperparameters">
+                                                show <!--折叠框文字-->
+                                                <span class="badge">{{ parameters|length }}</span><!--总共的项数-->
+                                            </button>
+                                        </td>
+                                    {% endif %}
+                                {% endfor %}
+                                {# 若参数较少，不能填满表格，则添加空表格 #}
+                                {% if parameter_names|length < 8 %}
+                                    <th colspan="{% widthratio parameter_names|length|add:-8 1 -1 %}"
+                                        style="width: 11.1%;">
+                                        ...
+                                    </th>
+                                {% endif %}
+                            </tr>
+                            <!--特征重要性-->
+                            <tr><!-- 特征名 标题 -->
+                                <th style="width: 11.1%;">Feature_importance</th><!-- 行标题 -->
+                                {% for feature_name in feature %}
+                                    {% if forloop.counter <= 7 %}
+                                        <th style="width: 11.1%;">{{ feature_name|truncatechars:10 }}</th>
+                                    {% elif forloop.counter == 8 %}
+                                        <th style="width: 11.1%;">More</th>
+                                    {% endif %}
+                                {% endfor %}
+                                {# 若参数较少，不能填满表格，则添加空表格 #}
+                                {% if feature|length < 8 %}
+                                    <th colspan="{% widthratio feature|length|add:-8 1 -1 %}" style="width: 11.1%;">
+                                        ...
+                                    </th>
+                                {% endif %}
+                            </tr>
+                            <!-- 数据表 特征重要性数据 -->
+                            <tr>
+                                <td>Value</td><!-- 行值 -->
+                                {% for importance_value in importance %}
+                                    {% if forloop.counter <= 7 %}
+                                        <!-- 前七项 -->
+                                        <td>{{ importance_value|floatformat:3 }}</td>
+                                    {% elif forloop.counter == 8 %}
+                                        <!-- 第八项 -->
+                                        <td>
+                                            <!--折叠框按钮-->
+                                            <button class="btn btn-danger btn-xs" type="button" data-toggle="collapse"
+                                                    data-target="#my_feature_importance" aria-expanded="false"
+                                                    aria-controls="my_feature_importance">
+                                                show <!--折叠框文字-->
+                                                <span class="badge">{{ importance|length }}</span><!--总共的项数-->
+                                            </button>
+
+                                        </td>
+                                    {% endif %}
+                                {% endfor %}
+                                {# 若参数较少，不能填满表格，则添加空表格 #}
+                                {% if feature|length < 8 %}
+                                    <th colspan="{% widthratio feature|length|add:-8 1 -1 %}" style="width: 11.1%;">
+                                        ...
+                                    </th>
+                                {% endif %}
+                            </tr>
+                        </table>
+                    </div>
+                    <!--展示全部的超参数列表-->
+                    <div class="collapse" id="my_total_hyperparameters">
+                        <!--表格出现滚动条-->
+                        <div class="table-responsive">
+                            <table class="table text-nowrap table-hover" style="margin-bottom: 0">
+                                <tr><!-- 超参数名 标题 -->
+                                    {% for parameter_name in parameter_names %}
+                                        <th>{{ parameter_name }}</th>
+                                    {% endfor %}
+                                </tr>
+                                <!-- 数据表 超参数数据  -->
+                                <tr>
+                                    {% for parameter in parameters %}
+                                        <td>{{ parameter|floatformat:'-2' }}</td>
+                                    {% endfor %}
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <!--展示全部的特征重要性列表-->
+                    <div class="collapse" id="my_feature_importance">
+                        <div class="table-responsive">
+                            <table class="table table-hover" style="margin-bottom: 0">
+                                <tr><!-- 特征名 标题 -->
+                                    {% for feature_name in feature %}
+                                        <th>{{ feature_name }}</th>
+                                    {% endfor %}
+                                </tr>
+                                <!-- 数据表 特征重要性数据 -->
+                                <tr>
+                                    {% for importance_value in importance %}
+                                        <td>{{ importance_value|floatformat:3 }}</td>
+                                    {% endfor %}
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <!--图表-->
+                    <div class="panel-heading text-center" style="border-radius: 0;border-top: 1px solid #ddd;">
+                        <!--标题-->
+                        <h3 style="margin-top: 0;margin-bottom: 0">Figures</h3>
+                    </div>
+                    <!--各种图-->
+                    <div class="panel-body">
+                        <img src="{% url 'media' job_id %}/report/bias_var.png" alt="..." class="img-rounded"
+                             style="width: 33.1%">
+                        <img src="{% url 'media' job_id %}/report/learning_curve.png" alt="..."
+                             class="img-rounded" style="width: 33.1%">
+                        <img src="{% url 'media' job_id %}/report/roc.png" alt="..." class="img-rounded"
+                             style="width: 33.1%">
+                        <img src="{% url 'media' job_id %}/report/hyperParameter_scatter.png" alt="..."
+                             class="img-rounded" style="width: 100%">
+                        <img src="{% url 'media' job_id %}/report/shap.png" alt="..." class="img-rounded"
+                             style="width: 100%">
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        <!--对接-->
+        {% if job_type == 'docking' or job_type == 'pipeline' %}<!--对接-->
+            <div class="row"><!--行-->
+                <div class="panel panel-default"><!--面板-->
+                    <div class="panel-heading text-center">
+                        <h3 style="margin-bottom: 0;margin-top: 0">Visualization</h3>
+                    </div><!--任务名-->
+                    <div class="panel-body" style="padding: 0">
+                        <!--左侧分数-->
+                        <div class="col-sm-6" style="padding: 0">
+                            <div class="table-responsive" style="height: 500px"> <!--滚动条-->
+                                <table class="table table-hover"><!-- 数据表 -->
+                                    <tr><!-- 数据表 标题 -->
+                                        <th>No.</th>
+                                        <th>Ligand</th>
+                                        <th>Score</th>
+                                        <th>Complex</th>
+                                        <th>Site</th>
+                                    </tr><!-- 数据表 标题 -->
+                                    <!--循环获取数据-->
+                                    {% for lig_info in lig_infos %}
+                                        <tr><!-- 数据表 内容 分子名字， 分数， 是否显示 -->
+                                            <td>{{ forloop.counter }}</td><!--计数器-->
+                                            <td>{{ lig_info.0 }}</td><!--分子名字-->
+                                            <td>{{ lig_info.1|floatformat:'2' }}</td><!--分子分数-->
+                                            {% if forloop.counter == 1 %}
+                                                <td><input type="checkbox" value="{{ lig_info.0 }}"
+                                                           class="my_pl_complex"
+                                                           checked="checked"></td>
+                                                <!--是否显示-->
+                                            {% else %}
+                                                <td><input type="checkbox" value="{{ lig_info.0 }}"
+                                                           class="my_pl_complex">
+                                                </td><!--是否显示复合物-->
+                                            {% endif %}
+                                            <td><input type="checkbox" value="{{ lig_info.0 }}"
+                                                       class="my_pl_complex_site">
+                                            </td><!--是否显示位点-->
+                                        </tr><!-- 数据表 内容 分子名字， 分数， 是否显示 -->
+                                    {% endfor %}
+                                </table><!-- 数据表 -->
+                            </div>
+                        </div>
+                        <!--右侧展示小分子-->
+                        <div class="col-sm-6 " id="3dmol" style="padding-left: 0; padding-right: 0">  <!--3dmoljs展示窗口-->
+                            <div id="pl_complex" class="mol-container"
+                                 style="width: 100%;position: relative;"></div>
+                        </div><!--3dmoljs展示窗口-->
+                    </div><!--面板主体-->
+                    <!--单个分子相互作用-->
+                    <div class="panel-heading text-center" style="border-radius: 0;border-top: 1px solid #ddd;">
+                        <!--标题-->
+                        <h3 style="margin-top: 0;margin-bottom: 0">Protein-ligand Complex Interaction information</h3>
+                    </div>
+                    <!--单个相互作用显示表-->
+                    <table class="table" id="each_interaction_table">
+                        <!--标题-->
+                        <tr id="each_interaction_header" class="each_interaction_table_header_line">
+                            <th id="each_interaction_header" style="width: 20%;padding-left: 15px">
+                                Interaction<!--文本内容-->
+                                <!--下拉菜单-->
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                            aria-haspopup="true" aria-expanded="false" style="padding: 0px 6px">
+                                        <span class="caret"></span>
+                                        <span class="sr-only">Toggle Dropdown</span>
+                                    </button>
+                                    <ul class="dropdown-menu"><!--菜单内容 ： 相互作用-->
+                                        <li><a class="each_interaction_type">hydrogen bond</a></li>
+                                        <li><a class="each_interaction_type">halogenbond</a></li>
+                                        <li><a class="each_interaction_type">salt bridges</a></li>
+                                        <li><a class="each_interaction_type">hydrophobic contacts</a></li>
+                                        <li><a class="each_interaction_type">metal</a></li>
+                                    </ul>
+                                </div>
+                            </th>
+                            <th style="width: 20%">Residue</th>
+                            <th style="width: 20%">Residue_ID</th>
+                            <th style="width: 20%">Residue_Atom</th>
+                            <th style="width: 20%">Frequency</th>
+                        </tr>
+                        <!--每个分子-->
+                        {% for lig_name, interactions  in each_interaction_static.items %}
+                            <!--每种作用-->
+                            {% for interaction in interactions %}
+                                <!--每个残基-->
+                                {% for rec in interaction %}
+                                    <tr id="each_interaction_content_row"
+                                        class="each_interaction_table__content_row {{ lig_name }}">
+                                        {% if forloop.parentloop.counter == 1 %}
+                                            <td class="each_interaction_td">hydrogen bond</td><!--相互作用-->
+                                        {% elif forloop.parentloop.counter == 2 %}
+                                            <td class="each_interaction_td">halogenbond</td><!--相互作用-->
+                                        {% elif forloop.parentloop.counter == 3 %}
+                                            <td class="each_interaction_td">salt bridge</td><!--相互作用-->
+                                        {% elif forloop.parentloop.counter == 4 %}
+                                            <td class="each_interaction_td">hydrophobic contacts</td><!--相互作用-->
+                                        {% else %}
+                                            <td class="each_interaction_td">metal</td><!--相互作用-->
+                                        {% endif %}
+                                        <td>{{ rec.0 }}</td><!--展示残基名-->
+                                        <td>{{ rec.1 }}</td><!--展示残基编号-->
+                                        <td>{{ rec.2 }}</td><!--展示残基元素-->
+                                        <td>{{ rec.3 }}</td><!--展示作用出现频次-->
+                                    </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        {% endfor %}
+                    </table>
+                    <!--展示其他内容-->
+                    <!--相互作用频率分析-->
+                    <div class="panel-heading text-center" style="border-radius: 0;border-top: 1px solid #ddd;">
+                        <!--标题-->
+                        <h3 style="margin-top: 0;margin-bottom: 0">Interaction frequency analysis for reference</h3>
+                    </div>
+                    <!--相互作用显示表-->
+                    <table class="table" id="my_interaction_table">
+                        <!--标题-->
+                        <tr id="each_interaction_header" class="each_interaction_table_header_line">
+                            <th id="each_interaction_header" style="width: 20%;padding-left: 15px">
+                                Interaction<!--文本内容-->
+                                <!--下拉菜单-->
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                            aria-haspopup="true" aria-expanded="false" style="padding: 0px 6px">
+                                        <span class="caret"></span>
+                                        <span class="sr-only">Toggle Dropdown</span>
+                                    </button>
+                                    <ul class="dropdown-menu"><!--菜单内容 ： 相互作用-->
+                                        {% for interaction in interaction_rec_frequency %}
+                                            {% if forloop.counter == 1 %}<!--若为第一个，则增加ID用于点击触发事件-->
+                                                <li><a class="my_interaction_type"
+                                                       id="first_interaction">{{ interaction.0 }}</a></li>
+                                                {% else %}<!--其余-->
+                                                <li><a class="my_interaction_type"
+                                                >{{ interaction.0 }}</a></li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </th>
+                            <th style="width: 20%">Residue</th>
+                            <th style="width: 20%">Residue_ID</th>
+                            <th style="width: 20%">Residue_Atom</th>
+                            <th style="width: 20%">Frequency</th>
+                        </tr>
+                        <!--循环产生渲染数据 rec_frequency [['hb', [[MET, 76, O, 18], [MET, 76, O, 18]]], ['metal', [MET, 76, O, 18]]]-->
+                        {% for interaction in interaction_rec_frequency %}
+                            {% for frequency in interaction.1 %}
+                                <tr class="{{ interaction.0 }} my_interaction_table_content_row">
+                                    <td style="padding-left: 15px">{{ interaction.0 }}</td><!--展示作用类型-->
+                                    <td>{{ frequency.0 }}</td><!--展示残基名-->
+                                    <td>{{ frequency.1 }}</td><!--展示残基编号-->
+                                    <td>{{ frequency.2 }}</td><!--展示残基元素-->
+                                    <td>{{ frequency.3 }}</td><!--展示作用出现频次-->
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </table>
+                    <!--展示聚类结构-->
+                    <div class="panel-heading text-center" style="border-radius: 0;border-top: 1px solid #ddd;">
+                        <h3 style="margin-top: 0;margin-bottom: 0">Cluster</h3>
+                    </div>
+                    <!-- List group -->
+                    <ul class="list-group">
+                        <!--smatrs<li class="list-group-item">Smarts: {{ smarts }}</li>-->
+                        <li class="list-group-item">
+                            <img src="{% url 'media' job_id %}/report/cluster.png" alt="Clustering Failed">
+                        </li><!--图片-->
+                    </ul>
+                </div><!--面板-->
+            </div><!--行-->
+        {% endif %}
+    </div><!--容器-->
+    <br/><br/><br/><br/>
+{% endblock %}
+<!--js-->
+{% block js %}
+    <!--引入3Djs
+    <script src="http://3Dmol.csb.pitt.edu/build/3Dmol-min.js"></script>-->
+    <!--引入3dmoljs-->
+    <script type="text/javascript" src="{% static 'js/3Dmol-min.js' %}"></script>
+    <!--我的代码-->
+    <script type="text/javascript">
+        //就绪即运行
+        $(function () {
+            //动态载入蛋白
+            check_show();
+            //检查点击事件
+            $(':checkbox').click(function () {
+                //实现单选
+                $(':checked').prop('checked', false);
+                $(this).prop('checked', true);
+                //实现展示
+                check_show();
+            });
+            //点击下载结果
+            $('#my_download_btn').click(function () {
+                get_result();
+            });
+            //切换相互作用按钮
+            click2interaction();
+            //切换单个分子相互作用
+            each_click2interaction();
+            //模拟点击,触发相互作用隐藏事件
+            $('#first_interaction').click();
+        });
+
+
+        //检查被勾选的状态
+        function check_show() {
+            $(':checked').each(function () {
+                //移除展示过的数据
+                $('.mol-container').remove();
+                //加入新的展示窗口
+                $('#3dmol').append('<div id="pl_complex" class="mol-container" style="width: 100%;height: 500px;' +
+                    'position: relative;" data-select=\'{"hetflag":false}\'></div>');
+                //展示蛋白
+                var lig_id = $(this).val();
+                var show_site = false;  //判断是否显示位点
+                if ($(this).attr('class') === 'my_pl_complex_site') {
+                    show_site = true
+                }
+                //3dmoljs具体代码
+                show_complex(lig_id, show_site);
+                // 隐藏所有分子的相互作用信息
+                $('.each_interaction_table__content_row').hide();
+                //显示被勾选的分子相互作用信息
+                $('.each_interaction_table__content_row').each(function () {
+                    if ($(this).attr('class') === ('each_interaction_table__content_row ' + lig_id)) {
+                        $(this).show();
+                    }
+                })
+
+            })
+        }
+
+        //载入单个蛋白函数
+        function show_complex(lig_id, show_site) {
+            //动态载入蛋白配体复合物
+            let element = $('#pl_complex');
+            let config = {backgroundColor: 'white'};
+            let viewer = $3Dmol.createViewer(element, config);
+            let pdbUri = '/plic/submitted_files/{{ job_id }}/complex/zxj.pdb'.replace('zxj', lig_id);
+            //异步请求
+            jQuery.ajax(pdbUri, {
+                success: function (data) {
+                    let v = viewer;
+                    v.addModel(data, "pdb");                       /* load data */
+                    v.setStyle({}, {cartoon: {color: 'spectrum'}});  /* style protein atoms */
+                    v.setStyle({"hetflag": true}, {stick: {colorscheme: "greenCarbon"}});  /* style ligand atoms */
+                    //展示位点所需代码
+                    if (show_site === true) {
+                        v.setStyle({"hetflag": false}, {cartoon: {color: 'white'}});  /* style protein atoms */
+                        //addResLabels({a, within:{distance:5, sel:{b}}})  其中 a 为蛋白部分的原子， b为配体原子
+                        v.addResLabels({"hetflag": false, within: {distance: 5, sel: {"hetflag": true}}}, {
+                            font: 'Arial',
+                            fontColor: 'white',
+                            backgroundOpacity: '0.9',
+                            fontSize: 11
+                        });
+                        v.zoomTo({"hetflag": true}, 500);  //缩放到小分子所处的位置
+                    } else {
+                        v.zoomTo();
+                    }
+                    /* set camera */
+                    v.render();                                      /* render scene */
+                    v.zoom(1.2, 1000);                               /* slight zoom */
+                },
+                error: function (hdr, status, err) {
+                    console.error("Failed to load PDB " + pdbUri + ": " + err);
+                },
+            });
+        }
+
+        //点击下载结果
+        function get_result() {
+            var result_url = window.location.href + '/download';
+            window.open(result_url);
+        }
+
+        //切换作用类型
+        function click2interaction() {
+            $('.my_interaction_type').click(function () {
+                $('.my_interaction_table_content_row').hide();
+                //获取作用类型
+                var interaction_type = $(this).text() + ' my_interaction_table_content_row';
+                //循环检查 隐藏未选择的作用类型
+                $('.my_interaction_table_content_row').each(function () {
+                    if ($(this).attr('class') === interaction_type) {
+                        $(this).show()
+                    }
+                })
+            })
+        }
+
+        //单个分子切换作用类型
+        function each_click2interaction() {
+            $('.each_interaction_type').click(function () {
+                //模拟点击复选框
+                $(':checked').each(function () {
+                    $(this).click();
+                });
+                //获取作用类型
+                var interaction_type = $(this).text();
+                //循环检查 隐藏未选择的作用类型
+                $('.each_interaction_table__content_row').each(function () {
+                    if ($(this).attr('style') !== 'display: none;') {
+                        if ($(this).children('td.each_interaction_td').text() !== interaction_type) {
+                            $(this).hide()
+                        } else {
+                            $(this).show()
+                        }
+                    }
+                })
+            })
+        }
+    </script>
+
+{% endblock %}
+

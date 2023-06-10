@@ -1,0 +1,316 @@
+<!--继承模板-->
+{% extends 'queue/base.html' %}
+<!--修改标题-->
+{% block title %}
+    <title>Queue</title>
+{% endblock %}
+<!--修改内容-->
+{% block global_content %}
+    <!--容器-->
+    <div class="container" id="my_progress_container">
+        <br/>
+        <!--警告信息-->
+        <div class="row">
+            <div class="alert alert-warning alert-dismissible text-center" role="alert" style="font-size: 20px">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <strong>Warning!</strong>
+                <p></p>
+                <p id="tet">This page will refresh every 10 seconds to update the status of jobs.</p>
+                <p id="tet">If you lost the key file or meet the <strong class="alert-danger">500 error</strong>, you can contact us through email.</p>
+                <p id="tet">The prerequisite for the success of the task is that the user follows the instructions.</p>
+            </div>
+        </div>
+        <!--队列信息-->
+        <div class="row">
+            <!--面板-->
+            <div class="panel panel-success">
+                <!--表格-->
+                <table class="table table-hover">
+                    <!--表格标题-->
+                    <tr>
+                        <th style="width: 15%" class="text-center">ID <span class="glyphicon glyphicon-list-alt"
+                                                                            aria-hidden="true"></span></th>
+                        <th style="width: 15%" class="text-center">Type <span class="glyphicon glyphicon-info-sign"
+                                                                              aria-hidden="true"></span></th>
+                        <th style="width: 30%" class="text-center">Submitted time (UTC) <span
+                                class="glyphicon glyphicon-calendar" aria-hidden="true"></span></th>
+                        <th style="width: 30%" class="text-center">Status <span class="glyphicon glyphicon-hourglass"
+                                                                                aria-hidden="true"></span></th>
+                        <th style="width: 10%" class="text-center">Result <span class="glyphicon glyphicon-eye-close"
+                                                                                aria-hidden="true"></span></th>
+                    </tr>
+                    <!--具体内容-->
+                    {% for job in jobs %}
+                        <tr class="text-center">
+                            <td>{{ job.0 }}</td>
+                            <td>{{ job.1 }}</td>
+                            <td>{{ job.2 }}</td>
+                            <!--判断进度-->
+                            {% if job.3 == 100 %}
+                                <td>Completed</td>
+                            {% elif job.3 == -1 %}
+                                <td>Error</td>
+                            {% elif job.3 == 0 %}
+                                <td>Waiting</td>
+                            {% else %}
+                                <td style="padding-left: 120px;padding-right: 120px">
+                                    <!--若在计算，显示进度条-->
+                                    <div class="progress " style="margin-bottom: 0;">
+                                        <div class="progress-bar progress-bar-striped  active"
+                                             role="progressbar" aria-valuenow="20" aria-valuemin="0"
+                                             aria-valuemax="100"
+                                             style="min-width: 100%; width: {{ job.3 }}%">{{ job.3|floatformat:2 }}%
+                                        </div>
+                                    </div>
+                                </td>
+                            {% endif %}
+                            <!--获取结果页按钮-->
+                            {% if job.3 == 100 %}  <!--若计算完成，则按钮可点击-->
+                                <td>
+                                    <!--模态框启动按钮-->
+                                    <button type="button" class="btn btn-primary btn-xs"
+                                            data-toggle="modal"
+                                            data-target="#{{ job.0 }}Modal" data-backdrop="static">
+                                        access <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+                                    </button>
+                                    <!--模态框-->
+                                    <div class="modal fade" id="{{ job.0 }}Modal" tabindex="-1" role="dialog"
+                                         aria-labelledby="myModalLabel">
+                                        <div class="modal-dialog" role="document">
+                                            <!--任务提交-->
+                                            <!--表单-->
+                                            <form class="form-horizontal" action="{% url 'cal_queue:result' job.0 %}"
+                                                  method="post"
+                                                  enctype="multipart/form-data">
+                                                {% csrf_token %}
+                                                <div class="modal-content">
+                                                    <!--模态框标题-->
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal"
+                                                                aria-label="Close"><span
+                                                                aria-hidden="true">&times;</span>
+                                                        </button>
+                                                        <h4 class="modal-title " id="myModalLabel">Check the key file
+                                                            for
+                                                            <span class="text-success">{{ job.0 }}</span></h4>
+                                                    </div>
+                                                    <!--模态框内容-->
+                                                    <div class="modal-body text-center">
+                                                        <!--上传密钥文件表单-->
+                                                        <div class="form-group" style="margin-bottom: 0px">
+                                                            <!--标签宽度-->
+                                                            <label for="{{ job.0 }}rsa-file"
+                                                                   class="col-sm-2 control-label "
+                                                                   style="text-align: center">Key File</label>
+                                                            <!--选择框宽度-->
+                                                            <div class="col-sm-10">
+                                                                <!--在首尾加入符号-->
+                                                                <div class="input-group">
+                                                                    <!--加入符号-->
+                                                                    <div class="input-group-addon"
+                                                                         style="width: 60px">.rsa
+                                                                    </div>
+                                                                    <!--文件框-->
+                                                                    <input id='{{ job.0 }}rsa_location'
+                                                                           class="form-control"
+                                                                           onclick="$('#rsa-file').click();">
+                                                                    <!--连接到选择文件按钮-->
+                                                                    <label class="input-group-btn">
+                                                                        <input type="button" id="i-check" value="Choose"
+                                                                               class="btn btn-primary"
+                                                                               onclick="$('#{{ job.0 }}rsa-file').click();">
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                            <!--选择文件按钮-->
+                                                            <input type="file" name="{{ job.0 }}_rsa_file"
+                                                                   id='{{ job.0 }}rsa-file'
+                                                                   accept=""
+                                                                   onchange="$('#{{ job.0 }}rsa_location').val($('#{{ job.0 }}rsa-file').val());"
+                                                                   style="display: none" required="required">
+                                                        </div>
+                                                    </div>
+                                                    <!--模态框底部-->
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-default"
+                                                                data-dismiss="modal">
+                                                            Close
+                                                        </button>
+                                                        <button type="submit" id="modal_submit_btn"
+                                                                class="btn btn-primary">Submit
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </td>
+                            {% else %}  <!--若计算未完成，则按钮不可点击-->
+                                <td>
+                                    <!--模态框启动按钮-->
+                                    <button type="button" class="btn btn-primary btn-xs disabled"
+                                            data-toggle="modal"
+                                            data-target="#{{ job.0 }}Modal" data-backdrop="static">
+                                        access <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+                                    </button>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <!--分页-->
+            <nav aria-label="Page navigation" class="text-right">
+                <ul class="pagination ">
+                    <!--前一页-->
+                    {% if page_obj.has_previous %}
+                        <li>
+                            <a href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="disabled">
+                          <span>
+                            <span aria-hidden="true">&laquo;</span>
+                          </span>
+                        </li>
+                    {% endif %}
+                    <!--当前页-->
+                    <li class="disabled"><a href="?page={{ page_obj.number }}">{{ page_obj.number }}</a></li>
+                    <!--下一页-->
+                    {% if page_obj.has_next %}
+                        <li>
+                            <a href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="disabled">
+                          <span>
+                            <span aria-hidden="true">&raquo;</span>
+                          </span>
+                        </li>
+                    {% endif %}
+                    <!--页码跳转-->
+                    <div class="input-group text-center " style="padding-left: 20px">
+                        <!--下拉菜单-->
+                        <div class="input-group-btn dropup">
+                            <!--用于显示的按钮-->
+                            <button type="button" class="btn btn-default">{{ page_obj.paginator.num_pages }}</button>
+                            <!--下拉菜单按钮-->
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="false">
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" style="min-width: 70px;max-height: 100px;overflow: scroll">
+                                <!--循环产生页码-->
+                                {% for page in page_obj.paginator.page_range %}
+                                    <li class=" text-center"><a href="?page={{ page }}">{{ page }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <!--输入页码-->
+                        <input type="text" class="form-control" placeholder="Turn to page..." name="to_page"
+                               id="to_page">
+                        <!--点击跳转-->
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" id="to_page_btn">Go</button>
+                        </span>
+                    </div>
+                </ul>
+            </nav>
+        </div>
+        <!--验证失败的弹窗-->
+        <div class="modal fade" id="validation_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content text-center">
+                    <!--标题
+                    <div class="modal-header bg-danger">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h1 class="modal-title" id="myModalLabel" style="color: #a94442">Warning</h1>
+                    </div>-->
+                    <!--内容-->
+                    <div class="modal-body bg-danger" style="padding: 0">
+                        <div class="alert alert-danger" role="alert" style="margin-bottom: 0"><h2><strong>Validation
+                            Failure!</strong></h2></div>
+                    </div>
+                    <!--脚注-->
+                    <div class="modal-footer bg-danger">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br/><br/><br/><br/>
+    </div>
+{% endblock %}
+<!--js-->
+{% block js %}
+    <!--自定义脚本-->
+    <script type="text/javascript">
+
+        //页面加载即执行
+        $(function () {
+            //删除未提交的表单
+            remove_form();
+            //验证失败弹窗
+            validation_modal();
+            //定向跳转页面
+            to_page();
+            //移除表单
+            remove_form();
+        });
+
+        //定时刷新页面  10s //
+        setInterval('my_refresh()', 10000);
+
+        //Queue 定向跳转页面
+        function to_page() {
+            $('#to_page_btn').click(function () {
+                window.location.href = "{% url 'cal_queue:queue' %}?page=" + $('#to_page').val()
+            })
+        }
+
+        //检测模态框是否打开，并判断是否刷新
+        function my_refresh() {
+            //若未打开模态框， 5秒刷新一次  若模态框打开了， $('#myModal').css('display')==='block', 若未打开，则为'none'
+            var modal_num = 0;
+            ($('.modal').each(function () {
+                //判断每个模态框是否打开  若打开，变量自加1
+                if ($(this).css('display') === 'block') {
+                    modal_num += 1;
+                }
+            }));
+            //若累计变量始终为0， 则开始刷新
+            if (modal_num === 0) {
+                window.location.reload()
+            }
+        }
+
+        //提交表单时，删除面板中的其余表单
+        function remove_form() {
+            $('#modal_submit_btn').click(function () {
+                ($('.panel .modal').each(function () {
+                    //判断每个模态框是否打开  若未打开，则删除表单
+                    if ($(this).css('display') === 'none') {
+                        $(this).remove()
+                    }
+                }));
+            })
+        }
+
+        //弹窗
+        function validation_modal() {
+            {% if messages %}
+                {% for msg in messages %}
+                    $('#validation_modal').modal('show');
+                {% endfor %}
+            {% endif %}
+        }
+    </script>
+{% endblock %}
+
+

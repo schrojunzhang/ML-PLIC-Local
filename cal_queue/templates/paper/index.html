@@ -1,0 +1,68 @@
+<!--继承模板-->
+{% extends 'queue/base.html' %}
+<!--修改标题-->
+{% block title %}
+    <title>Paper</title>
+{% endblock %}
+<!--修改内容-->
+{% block global_content %}
+    <!--容器-->
+    <div class="container" id="my_paper_container" style="font-size: 18px; font-family: 'Times New Roman'">
+        <br/><br/><br/>
+        <!--已发表文章-->
+        <div class="row">
+            <!--面板-->
+            <div class="panel panel-info">
+                <!--面板标题-->
+                <div class="panel-heading" style="font-size: 24px; padding-left: 7px"><strong>If you use ML-PLIC, please cite:</strong></div>
+                <!--表格-->
+                <table class="table table-hover">
+                    <!--已发表文献-->
+                    <tr>
+                        <td class="text-left">Chao Shen, Junjie Ding, Zhe Wang, Dongsheng Cao, Xiaoqin Ding, Tingjun
+                            Hou*, From machine learning to deep learning: advances in scoring functions for
+                            computational docking, <em>WIRES Computational Molecular Science</em>, 2020, 10, e1429.
+                            <a href="https://onlinelibrary.wiley.com/doi/full/10.1002/wcms.1429">[HTML]</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">Chao Shen, Ye Hu, Zhe Wang, Xujun Zhang, Haiyang Zhong, Gaoang Wang,
+                            Xiaojun Yao, Lei Xu, Dongsheng Cao*, Tingjun Hou*, Can machine learning consistently improve
+                            the scoring power of classical scoring functions? insights into the role of machine learning
+                            in scoring functions, <em>Briefings in Bioinformatics</em>, 2020.
+                            <a href="https://pubmed.ncbi.nlm.nih.gov/31982914/">[HTML]</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">Zhe Wang, Huiyong Sun, Xiaojun Yao, Dan Li, Lei Xu, Youyong Li, Sheng
+                            Tian, Tingjun Hou*, Comprehensive evaluation of ten docking programs on a diverse set of
+                            protein-ligand complexes: prediction accuracy of sampling power and scoring power, <em>Physical
+                                Chemistry Chemical Physics</em>, 2016, 18, 12964-12975.
+                            <a href="https://www.onacademic.com/detail/journal_1000038793770410_affe.html">[HTML]</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">Huiyong Sun, Peichen Pan, Sheng Tian, Lei Xu, Xiaotian Kong, Youyong Li,
+                            Dan Li, Tingjun Hou*, Constructing and Validating High-Performance MIEC-SVM Models in
+                            Virtual Screening for Kinases: A Better Way for Actives Discovery, <em>Scientific
+                                Reports</em>, 2016,
+                            6, 24817.
+                            <a href="https://www.nature.com/articles/srep24817">[HTML]</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">Tingjun Hou*, Nan Li, Youyong Li, Wei Wang*, Characterization of
+                            domain-peptide interaction interface: prediction of SH3 domain-mediated protein-protein
+                            interaction network in yeast by generic structure-based models, <em>Journal of Proteome
+                                Research</em>, 2012, 11, 2982-2995.
+                            <a href="https://www.ncbi.nlm.nih.gov/pubmed/22468754">[HTML]</a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+

@@ -1,0 +1,955 @@
+<!--继承模板-->
+{% extends 'queue/base.html' %}
+<!--导入static-->
+{% block static_tag %}
+    {% load static %}
+{% endblock %}
+<!--修改标题-->
+{% block title %}
+    <title>Help</title>
+{% endblock %}
+<!--修改内容-->
+{% block global_content %}
+    <!--容器-->
+    <div class="container" id="my_help_container" style="font-size: 20px; font-family: 'Times New Roman'">
+        <br/><br/>
+        <!--浏览器兼容性-->
+        <div class="row">
+            <!--面板-->
+            <div class="panel panel-primary">
+                <!--面板标题-->
+                <div class="panel-heading text-center" style="font-size: 24px"><strong>Browser compatibility</strong>
+                </div>
+                <!--表格-->
+                <table class="table table-hover table-responsive">
+                    <!--标题行-->
+                    <tr>
+                        <th style="width: 16%;" class="text-center">OS</th> <!--操作系统-->
+                        <th style="width: 16%;" class="text-center">Version</th> <!--版本-->
+                        <th style="width: 16%;" class="text-center">Chrome</th> <!--谷歌浏览器-->
+                        <th style="width: 16%;" class="text-center">Firefox</th> <!--火狐浏览器-->
+                        <th style="width: 16%;" class="text-center">Microsoft Edge</th> <!--Microsoft Edge浏览器-->
+                        <th style="width: 16%;" class="text-center">Safari</th> <!--Safari浏览器-->
+                    </tr>
+                    <!--Linux-->
+                    <tr>
+                        <td style="width: 16%;" class="text-center">Linux</td> <!--操作系统-->
+                        <td style="width: 16%;" class="text-center">CentOS 7</td> <!--版本-->
+                        <td style="width: 16%;" class="text-center">not tested</td> <!--谷歌浏览器-->
+                        <td style="width: 16%;" class="text-center">61.0</td> <!--火狐浏览器-->
+                        <td style="width: 16%;" class="text-center">n/a</td> <!--Microsoft Edge浏览器-->
+                        <td style="width: 16%;" class="text-center">n/a</td> <!--Safari浏览器-->
+                    </tr>
+                    <!--Mac-->
+                    <tr>
+                        <td style="width: 16%;" class="text-center">MacOS</td> <!--操作系统-->
+                        <td style="width: 16%;" class="text-center">Catalina</td> <!--版本-->
+                        <td style="width: 16%;" class="text-center">86.0.4240.75</td> <!--谷歌浏览器-->
+                        <td style="width: 16%;" class="text-center">81.0.1</td> <!--火狐浏览器-->
+                        <td style="width: 16%;" class="text-center">86.0.622.51</td> <!--Microsoft Edge浏览器-->
+                        <td style="width: 16%;" class="text-center">13.0.5</td> <!--Safari浏览器-->
+                    </tr>
+                    <!--Windows-->
+                    <tr>
+                        <td style="width: 16%;" class="text-center">Windows</td> <!--操作系统-->
+                        <td style="width: 16%;" class="text-center">10</td> <!--版本-->
+                        <td style="width: 16%;" class="text-center">84.0.4147.105</td> <!--谷歌浏览器-->
+                        <td style="width: 16%;" class="text-center">82.0</td> <!--火狐浏览器-->
+                        <td style="width: 16%;" class="text-center">44.18362.449.0</td> <!--Microsoft Edge浏览器-->
+                        <td style="width: 16%;" class="text-center">n/a</td> <!--Safari浏览器-->
+                    </tr>
+
+                </table>
+            </div>
+        </div>
+        <br/><br/>
+        <!--说明-->
+        <div class="row">
+            <!--标签-->
+            <ul class="nav nav-tabs my_help_tab" role="tablist">
+                <li role="presentation" class="active"><a href="#docking">Docking</a></li>
+                <li role="presentation"><a href="#descriptors">Descriptors</a></li>
+                <li role="presentation"><a href="#modelling">Modelling</a></li>
+                <li role="presentation"><a href="#screening">Screening</a></li>
+                <li role="presentation"><a href="#pipeline">Pipeline</a></li>
+            </ul>
+            <!--内容-->
+            <div class="tab-content" id="myTabContent"><br/>
+                <!--docking-->
+                <div id="docking" class="tab-pane fade in active" role="tabpanel">
+                    <!--输入-->
+                    <div class="panel panel-success">
+                        <div class="panel-heading"><strong>Job Submission</strong></div>
+                        <div class="panel-body" style="padding: 0">
+                            <!--左侧放文字解说-->
+                            <div class="col-sm-4" style="padding: 0">
+                                <!--表格-->
+                                <table class="table table-responsive table-hover">
+                                    <!--蛋白-->
+                                    <tr>
+                                        <th>①</th>
+                                        <td class="text-justify">Select a receptor file in <strong>PDB</strong> format.
+                                        </td>
+                                    </tr>
+                                    <!--配体-->
+                                    <tr>
+                                        <th>②</th>
+                                        <td class="text-justify">Select a ligand database file in <strong>mol2</strong>
+                                            format.
+                                        </td>
+                                    </tr>
+                                    <!--活性位点-->
+                                    <tr>
+                                        <th>③</th>
+                                        <td class="text-justify">Define the binding site of protein-ligand complexes by
+                                            providing either: <br>
+                                            <strong class="text-danger">reference ligand</strong> in mol2 format;
+                                            <br><strong class="text-danger">pocket residue sequence number</strong>
+                                            <br><span class="text-muted">eg. HIS_14, THR_83, PHE_150</span>;
+                                            <br><strong class="text-danger">coordinates of binding site center</strong>
+                                            <br><span class="text-muted">eg. 16, 14, 3.8</span>.
+                                            <br><br>If none is provided, the binding pocket will be defined by the last
+                                            ligand in the uploaded ligand database.
+                                        </td>
+                                    </tr>
+                                    <!--对接软件-->
+                                    <tr>
+                                        <th>④</th>
+                                        <td class="text-justify">Choose a software from <strong>QuickVina
+                                            (Default)</strong> and <strong>Smina</strong> for docking.
+                                            <br><br>QuickVina is much faster than Smina.
+                                        </td>
+                                    </tr>
+                                    <!--email-->
+                                    <tr>
+                                        <th>⑤</th>
+                                        <td class="text-justify">If email is provided, you will received a email with a
+                                            key file once the job is finished.
+                                        </td>
+                                    </tr>
+                                    <!--protein_repair-->
+                                    <tr>
+                                        <th>⑥</th>
+                                        <td class="text-justify">Options for protein preparation.
+                                        </td>
+                                    </tr>
+                                    <!--ligand_repair-->
+                                    <tr>
+                                        <th>⑦</th>
+                                        <td class="text-justify">Options for ligand preparation.
+                                        </td>
+                                    </tr>
+                                    <!--docking parameters-->
+                                    <tr>
+                                        <th>⑧</th>
+                                        <td class="text-justify">Settings of docking parameters.
+                                        </td>
+                                    </tr>
+                                    <!--example_files-->
+                                    <tr>
+                                        <th>⑨</th>
+                                        <td class="text-justify">Example files for testing.
+                                        </td>
+                                    </tr>
+                                    <!--submit_button-->
+                                    <tr>
+                                        <th>⑩</th>
+                                        <td class="text-justify">The blue button decides whether to show or hide the
+                                            setting tables.
+                                            <br>Click the green button to submit your job.
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <!--右侧放图-->
+                            <div class="col-sm-8" style="padding: 0"><img src="{% static 'img/docking_in_help.jpg' %}"
+                                                                          style="border-bottom-left-radius: 0;border-top-left-radius: 0 "
+                                                                          class="img-responsive img-thumbnail"
+                                                                          alt="Responsive image">
+                            </div>
+                        </div>
+                    </div>
+                    <!--输出-->
+                    <div class="panel panel-info" style="margin-bottom: 100px">
+                        <div class="panel-heading"><strong>Job Results</strong></div>
+                        <div class="panel-body" style="padding: 0">
+                            <!--左侧放图-->
+                            <div class="col-sm-8" style="padding: 0"><img src="{% static 'img/docking_out_help.jpg' %}"
+                                                                          class="img-responsive img-thumbnail"
+                                                                          style="border-top-right-radius: 0;border-bottom-right-radius: 0"
+                                                                          alt="Responsive image">
+                            </div>
+                            <!--右侧放文字解说-->
+                            <div class="col-sm-4" style="padding: 0">
+                                <!--表格-->
+                                <table class="table table-responsive table-hover">
+                                    <!--下载连接-->
+                                    <tr>
+                                        <th>①</th>
+                                        <td class="text-justify">Click the blue button to <strong class="text-primary">download</strong>
+                                            the result file of corresponding job.
+                                        </td>
+                                    </tr>
+                                    <!--可视化界面-->
+                                    <tr>
+                                        <th>②</th>
+                                        <td class="text-justify">The left part of the panel presents the information of
+                                            <strong class="text-danger">top-100 ligands</strong> based on docking score;
+                                            <br><br>The right part of the panel shows the <strong class="text-danger">conformation</strong>
+                                            of the corresponding
+                                            receptor-ligand complex;
+                                            <br><br>If the checkbox in column 'site' is checked, the corresponding
+                                            <strong
+                                                    class="text-danger">binding site</strong> (residues within 5 A of
+                                            the ligand) will be shown on the right.
+                                        </td>
+                                    </tr>
+                                    <!--单个分子的相互作用-->
+                                    <tr>
+                                        <th>③</th>
+                                        <td class="text-justify">The <strong class="text-danger">interaction
+                                            information</strong> of the conformation of the protein-ligand complex
+                                            selected in Visualization panel.
+                                            <br><br>The detection of interactions are implemented by
+                                            <strong><em>oddt</em></strong>:
+                                            <br><strong class="text-primary">Hydrogen bond</strong>: <br>the
+                                            distance between acceptor-donor atoms <= 3.5 Å; <br>the angle is between 90°
+                                            and 150°.
+                                            <br><strong class="text-primary">Halogen bond</strong>: <br>the distance
+                                            between acceptor-donor atoms <= 4 Å; <br>the angle is between 90° and 150°.
+                                            <br><strong class="text-primary">Metal</strong>: <br>the distance between
+                                            acceptor-donor atoms <= 4 Å; <br>the angle is between 90° and 150°.
+                                            <br><strong class="text-primary">Salt bridge</strong>:<br> the distance
+                                            between acceptor-donor atoms <= 4 Å.
+                                            <br><strong class="text-primary">Hydrophobic contact</strong>: <br>the
+                                            distance between hydrophobe pairs <= 4 Å.
+                                            <br><br>The 5 kinds of interaction can be switched through the interaction
+                                            button.
+                                        </td>
+                                    </tr>
+                                    <!--相互作用信息统计-->
+                                    <tr>
+                                        <th>④</th>
+                                        <td class="text-justify">The <strong class="text-danger">interaction frequency
+                                            statistic</strong> is based on the interaction information of the
+                                            protein-ligand complexes in the Visualization panel for reference.
+                                            <br><br>Users can get a better understanding of <strong class="text-danger">binding
+                                                mode</strong> between the receptor and the ligand (i.e. which kind of
+                                            interaction and which residue are important for the binding).
+                                        </td>
+                                    </tr>
+                                    <!--聚类-->
+                                    <tr>
+                                        <th>⑤</th>
+                                        <td class="text-justify">The <strong class="text-danger">ligand cluster
+                                            centers</strong> of the top-100 ligands listed above.
+                                            <br><br>The clustering is based on the euclidean distance of <strong>Morgan
+                                                fingerprints</strong> generated from ligands and implemented with the
+                                            help of <strong><em>RDKit</em></strong>.
+                                        </td>
+                                    </tr>
+                                    <!--输出文件说明-->
+                                    <tr>
+                                        <th>⑥</th>
+                                        <td class="text-justify">The result file contains 3 file folders:
+                                            <br><strong>comolex</strong>: top-100 protein-ligand compl-exes files in pdb
+                                            format;
+                                            <br><strong>files</strong>: conformation files of docked ligands in mol2
+                                            format;
+                                            <br><strong>reports</strong>:
+                                            1) score.csv: docking score of protein-ligand complexes;
+                                            2) interac-tion.csv & data.csv: interaction statistics;
+                                            3) cluster.png & pocket.pdb(if residue sequence number is provided);
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--descriptors-->
+                <div id="descriptors" class="tab-pane fade" role="tabpanel">
+                    <!--输入-->
+                    <div class="panel panel-success">
+                        <div class="panel-heading"><strong>Job Submission</strong></div>
+                        <div class="panel-body" style="padding: 0">
+                            <!--左侧放文字解说-->
+                            <div class="col-sm-4" style="padding: 0">
+                                <!--表格-->
+                                <table class="table table-responsive table-hover" style="margin-bottom: 0">
+                                    <!--蛋白
+                                    <tr>
+                                        <th>①</th>
+                                        <td class="text-justify">Select a receptor file in <strong>PDB</strong> format.
+                                        </td>
+                                    </tr>-->
+                                    <!--配体
+                                    <tr>
+                                        <th>②</th>
+                                        <td class="text-justify">
+                                            Select a ligand database file in <strong>mol2</strong> format.
+                                        </td>
+                                    </tr>-->
+                                    <!--binding site email-->
+                                    <tr>
+                                        <th>-</th>
+                                        <td class="text-justify"> ①②⑤⑥⑨⑩ are the same as these mentioned in <span
+                                                class="text-primary">Docking</span>
+                                            help page.
+                                        </td>
+                                    </tr>
+                                    <!--decoys-->
+                                    <tr>
+                                        <th>③</th>
+                                        <td class="text-justify">
+                                            Select a inactive ligand database file in <strong>mol2</strong> format.
+                                        </td>
+                                    </tr>
+                                    <!--test ligand-->
+                                    <tr>
+                                        <th>④</th>
+                                        <td class="text-justify">
+                                            Select a wait-to-be-screened ligand database file in <strong>mol2</strong>
+                                            format.
+                                        </td>
+                                    </tr>
+                                    <!--描述符显示-->
+                                    <tr>
+                                        <th>⑦</th>
+                                        <td class="text-justify">Display the descriptors that will be generated for the
+                                            chosen tools.
+                                        </td>
+                                    </tr>
+                                    <!--选择描述符-->
+                                    <tr>
+                                        <th>⑧</th>
+                                        <td class="text-justify">Choose as least one descriptor generation tool to
+                                            capture the interaction mode of protein-ligand complex and output the
+                                            descriptors.
+                                        </td>
+                                    </tr>
+                                    <!--说明-->
+                                    <tr>
+                                        <th>-</th>
+                                        <td class="text-justify">
+                                            If <strong class="text-danger">decoys</strong> are uploaded, <strong
+                                                class="text-danger">test ligand</strong> should also be uploaded and the
+                                            <strong class="text-danger">active
+                                                ligand</strong> should be uploaded through ②; the descriptors computed
+                                            from actives
+                                            and decoys form the <strong class="text-warning">training set</strong> while
+                                            the descriptors generated from test
+                                            ligand form the <strong class="text-warning">test set</strong> and output 2
+                                            CSV files, else output 1 CSV file.
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <!--右侧放图-->
+                            <div class="col-sm-8" style="padding: 0"><img
+                                    src="{% static 'img/descriptor_in_help.jpg' %}"
+                                    style="border-bottom-left-radius: 0;border-top-left-radius: 0 "
+                                    class="img-responsive img-thumbnail"
+                                    alt="Responsive image">
+                            </div>
+                        </div>
+                    </div>
+                    <!--输出-->
+                    <div class="panel panel-info" style="margin-bottom: 100px">
+                        <div class="panel-heading"><strong>Job Results</strong></div>
+                        <div class="panel-body" style="padding: 0">
+                            <!--表格-->
+                            <table class="table table-responsive table-hover">
+                                <!--介绍-->
+                                <tr>
+                                    <th>①</th>
+                                    <td class="text-justify" colspan="5">The result file contains 1 file folder named
+                                        csvs
+                                        containing 3 kinds of CSV file.
+                                    </td>
+                                </tr>
+                                <!--训练集-->
+                                <tr>
+                                    <th>②</th>
+                                    <td class="text-justify" class="text-justify" colspan="5">The '<strong
+                                            class="text-danger">descriptor_file.csv</strong>' stores the descriptors
+                                        generated using the uploaded ligand database file.
+                                        If decoys is uploaded, the decoys will also be included in descriptors
+                                        generation and the descriptors will be used as training set.
+                                    </td>
+                                </tr>
+                                <!--测试集-->
+                                <tr>
+                                    <th>③</th>
+                                    <td class="text-justify" class="text-justify" colspan="5">If the test ligand is
+                                        uploaded, the corresponding
+                                        descriptors will be calculated and stored in '<strong class="text-danger">test_descriptor_file.csv</strong>'
+                                        file
+                                        and can be used as test set.
+                                    </td>
+                                </tr>
+                                <!--单个打分函数的描述符-->
+                                <tr>
+                                    <th>④</th>
+                                    <td class="text-justify" class="text-justify" colspan="5"> Descriptors generated
+                                        from various tools will be saved
+                                        in separate CSV files.
+                                    </td>
+                                </tr>
+                                <!--描述符样例-->
+                                <tr>
+                                    <th>⑤</th>
+                                    <td class="text-justify" class="text-justify" colspan="5">The data structure in the
+                                        '<strong class="text-danger">descriptor_file.csv</strong>'
+                                        or '<strong class="text-danger">test_descriptor_file.csv</strong>' is shown as
+                                        follows.
+                                    </td>
+                                </tr>
+                                <!--示例文件名-->
+                                <tr class="text-center">
+                                    <th colspan="6"><strong class="text-danger">descriptor_file.csv</strong></th>
+                                </tr>
+                                <!--示例标题-->
+                                <tr class="bg-success">
+                                    <th>name</th>
+                                    <th>hydrogen bond</th>
+                                    <th>hydrophobic contacts</th>
+                                    <th>...(descriptor term_n)</th>
+                                    <th>halogen bond</th>
+                                    <th>class</th>
+                                </tr>
+                                <!--示例数据-->
+                                <tr class="bg-success">
+                                    <td>CHEMBL355330</td>
+                                    <td>-6.449</td>
+                                    <td>-0.111</td>
+                                    <td>...</td>
+                                    <td>-7.537</td>
+                                    <td>1</td>
+                                </tr>
+                                <tr class="bg-success">
+                                    <td>...</td>
+                                    <td>...</td>
+                                    <td>...</td>
+                                    <td>...</td>
+                                    <td>...</td>
+                                    <td>...</td>
+                                </tr>
+                                <tr class="bg-success">
+                                    <td>ZINC19892971</td>
+                                    <td>-6.622</td>
+                                    <td>-0.102</td>
+                                    <td>...</td>
+                                    <td>-8.386</td>
+                                    <td>0</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!--modelling-->
+                <div id="modelling" class="tab-pane fade" role="tabpanel">
+                    <!--输入-->
+                    <div class="panel panel-success">
+                        <div class="panel-heading"><strong>Job Submission</strong></div>
+                        <div class="panel-body" style="padding: 0">
+                            <!--左侧放文字解说-->
+                            <div class="col-sm-4" style="padding: 0">
+                                <!--表格-->
+                                <table class="table table-responsive table-hover" style="margin: 0">
+                                    <!--重复描述-->
+                                    <tr>
+                                        <th>-</th>
+                                        <td class="text-justify">④⑧⑨ are the same as these mentioned in <strong
+                                                class="text-primary">Docking</strong> help page.
+                                        </td>
+                                    </tr>
+                                    <!--描述符文件-->
+                                    <tr>
+                                        <th>①</th>
+                                        <td class="text-justify">Select a descriptor file in <strong>csv</strong>
+                                            format, in which the data structure is the same as the one mentioned in
+                                            <strong
+                                                    class="text-primary">Descriptors</strong>.
+                                        </td>
+                                    </tr>
+                                    <!--机器学习算法-->
+                                    <tr>
+                                        <th>②</th>
+                                        <td class="text-justify">Choose one of the following three algorithms:
+                                            <br><strong>eXtreme Gradient Boosting</strong> (Default);
+                                            <br><strong>Support Vector Machine</strong>;
+                                            <br><strong>Random Forest</strong>.
+                                        </td>
+                                    </tr>
+                                    <!--训练集比例-->
+                                    <tr>
+                                        <th>③</th>
+                                        <td class="text-justify">Input a float between 0.0 and 1.0 to represents the
+                                            proportion of the dataset to include in the train split.<br>
+                                            The test set is used to test the generalization ability of the model.
+                                        </td>
+                                    </tr>
+                                    <!--邮件
+                                    <tr>
+                                        <th>④</th>
+                                        <td class="text-justify">If email is provided, you will received a email with a
+                                            key file once the job is finished.
+                                        </td>
+                                    </tr>-->
+                                    <!--归一化-->
+                                    <tr>
+                                        <th>⑤</th>
+                                        <td class="text-justify">Options for data preprocessing.
+                                        </td>
+                                    </tr>
+                                    <!--特征工程-->
+                                    <tr>
+                                        <th>⑥</th>
+                                        <td class="text-justify">Options for feature engineering.
+                                            <br>If <strong>SelectFromModel</strong> is chosen, the parameter is the
+                                            number of the base estimators;
+                                            else, the parameter means the number of features retained for modelling.
+                                        </td>
+                                    </tr>
+                                    <!--超参数-->
+                                    <tr>
+                                        <th>⑦</th>
+                                        <td class="text-justify">Settings of hyper-parameters tuning.
+                                            <br>The value range of each hyper-parameter is shown in <kbd>black
+                                                background</kbd>.
+                                            Users can click the <span class="text-primary">[suggestion]</span>
+                                            link to learn the impact on the
+                                            model when hyper-parameter changes.
+                                            <br>Two numbers separated by '<strong>-</strong>' in the input box indicate
+                                            the
+                                            hyper-parameter range for tuning and <strong>ten fold cross
+                                                validation</strong> is used to asses the model performannce.
+                                            <br><br>Methods for generating search space:
+                                            <br><strong>uniform</strong>: uniform distribution of a given range [a, b]；
+                                            <br><strong>uniformint</strong>: uniform distribution of integers of a given
+                                            range [a, b]；
+                                            <br><strong>randint</strong>: random distribution of integers of a given
+                                            range [a, b]；
+                                            <br><strong>loguniform</strong>: uniform distribution of a transformed range
+                                            [exp(a),
+                                            exp(b)]；
+                                            <br><strong>choice</strong>: random choose from a list of options.
+                                        </td>
+                                    </tr>
+                                    <!--example_files
+                                    <tr>
+                                        <th>⑧</th>
+                                        <td class="text-justify">Example files for testing.
+                                        </td>
+                                    </tr>-->
+                                    <!--submit_button
+                                    <tr>
+                                        <th>⑨</th>
+                                        <td class="text-justify">The blue button decides whether to show or hide the
+                                            setting tables.
+                                            <br>Click the green button to submit your job.
+                                        </td>
+                                    </tr>-->
+                                </table>
+                            </div>
+                            <!--右侧放图-->
+                            <div class="col-sm-8" style="padding: 0"><img src="{% static 'img/modelling_in_help.jpg' %}"
+                                                                          style="border-bottom-left-radius: 0;border-top-left-radius: 0 "
+                                                                          class="img-responsive img-thumbnail"
+                                                                          alt="Responsive image">
+                            </div>
+                        </div>
+                    </div>
+                    <!--输出-->
+                    <div class="panel panel-info" style="margin-bottom: 100px">
+                        <div class="panel-heading"><strong>Job Results</strong></div>
+                        <div class="panel-body" style="padding: 0">
+                            <!--左侧放图-->
+                            <div class="col-sm-8" style="padding: 0"><img
+                                    src="{% static 'img/modelling_out_help.jpg' %}"
+                                    class="img-responsive img-thumbnail"
+                                    style="border-top-right-radius: 0;border-bottom-right-radius: 0"
+                                    alt="Responsive image">
+                            </div>
+                            <!--右侧放文字解说-->
+                            <div class="col-sm-4" style="padding: 0">
+                                <!--表格-->
+                                <table class="table table-responsive table-hover">
+                                    <!--下载连接-->
+                                    <tr>
+                                        <th>①</th>
+                                        <td class="text-justify">Click the blue button to <strong class="text-primary">download</strong>
+                                            the result file of corresponding job.
+                                        </td>
+                                    </tr>
+                                    <!--模型评价指标-->
+                                    <tr>
+                                        <th>②</th>
+                                        <td class="text-justify"><strong class="text-danger">Model performance</strong>
+                                            under different evaluation metrics.
+                                        </td>
+                                    </tr>
+                                    <!--模型超参数-->
+                                    <tr>
+                                        <th>③</th>
+                                        <td class="text-justify"><strong class="text-danger">Hyper-parameters</strong>
+                                            of the model.
+                                        </td>
+                                    </tr>
+                                    <!--模型特征重要性-->
+                                    <tr>
+                                        <th>④</th>
+                                        <td class="text-justify">The <strong class="text-danger">features</strong> used
+                                            in modelling and their <strong class="text-danger">importance score</strong>
+                                            calculated by Random Forest
+                                            Classifier.
+                                        </td>
+                                    </tr>
+                                    <!--验证曲线-->
+                                    <tr>
+                                        <th>⑤</th>
+                                        <td class="text-justify">The <strong class="text-danger">validation
+                                            curve</strong>
+                                            shows the change of the model's accuracy on the training set and validation
+                                            set under the hyper-parameter tuning process.
+                                            It gives information about whether the model is <strong class="text-info">over-fitting</strong>
+                                            or not.
+                                        </td>
+                                    </tr>
+                                    <!--学习曲线-->
+                                    <tr>
+                                        <th>⑥</th>
+                                        <td class="text-justify">The <strong class="text-danger">learning curve</strong>
+                                            displays how the performance of the
+                                            model changes with changes in hyper-parameters from the perspective of the
+                                            F1
+                                            score.
+                                        </td>
+                                    </tr>
+                                    <!--ROC曲线-->
+                                    <tr>
+                                        <th>⑦</th>
+                                        <td class="text-justify">The <strong class="text-danger">receiver operating
+                                            characteristic curve</strong> plotted based on model performance on the test
+                                            set.
+                                            The bigger the area under the curve, the more accurate the model is.
+                                        </td>
+                                    </tr>
+                                    <!--超参数vc时间步曲线-->
+                                    <tr>
+                                        <th>⑧</th>
+                                        <td class="text-justify">The figures show the <strong class="text-danger">possible
+                                            range of the optimal
+                                            value of each hyperparameter</strong> found by the optimization algorithm
+                                            implemented
+                                            in <strong><em>hyperopt</em></strong> as the tuning round increases.
+                                        </td>
+                                    </tr>
+                                    <!--超参数vc模型损失曲线-->
+                                    <tr>
+                                        <th>⑨</th>
+                                        <td class="text-justify">The figures show the <strong class="text-danger">impact
+                                            of hyper-paramters</strong> on model performance.
+                                        </td>
+                                    </tr>
+                                    <!--模型解释-->
+                                    <tr>
+                                        <th>⑩</th>
+                                        <td class="text-justify">The figure shows top-20 important features and their
+                                            influence on model performance and is generated with
+                                            <strong><em>shap</em></strong>.The color represents the feature value
+                                            (<strong class="text-danger">red</strong>
+                                            high, <strong class="text-primary">blue low</strong>). This reveals for
+                                            example that a high num_hea-vy_atoms increases
+                                            the predicted probability of being an active ligand.
+                                        </td>
+                                    </tr>
+                                    <!--输出文件-->
+                                    <tr>
+                                        <th>-</th>
+                                        <td class="text-justify">The result file contains 2 file folders:
+                                            <br><strong>config</strong>:
+                                            1) the config file contains model parameters and can be used in <strong
+                                                    class="text-primary">Screening</strong> module;
+                                            2) id.rsa file used for access to the result page.
+                                            <br><strong>reports</strong>:
+                                            1) figure files in PNG format;
+                                            2) data of model performance, hyper-parameters and feature importance
+                                            stored in CSV file.
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--screening-->
+                <div id="screening" class="tab-pane fade" role="tabpanel">
+                    <!--输入-->
+                    <div class="panel panel-success">
+                        <div class="panel-heading"><strong>Job Submission</strong></div>
+                        <div class="panel-body" style="padding: 0">
+                            <!--左侧放文字解说-->
+                            <div class="col-sm-4" style="padding: 0">
+                                <!--表格-->
+                                <table class="table table-responsive table-hover" style="margin-bottom: 0">
+                                    <!--重复文件-->
+                                    <tr>
+                                        <th>-</th>
+                                        <td class="text-justify"> ④⑤⑥ are the same as these mentioned in <span
+                                                class="text-primary">Docking</span>
+                                            help page.
+                                        </td>
+                                    </tr>
+                                    <!--描述符文件-->
+                                    <tr>
+                                        <th>①<br>②</th>
+                                        <td class="text-justify">
+                                            Upload CSV files containing descriptors of training set and test set
+                                            respectively.
+                                            The data structure should be the same as the one mentioned in <strong
+                                                class="text-primary">Descriptors</strong>.
+                                        </td>
+                                    </tr>
+                                    <!--config-->
+                                    <tr>
+                                        <th>③</th>
+                                        <td class="text-justify">
+                                            Upload the config file generated in <strong
+                                                class="text-primary">Modelling</strong> module so that the best model
+                                            constructed in <strong class="text-primary">Modelling</strong> module can be
+                                            used to screen the unknown ligands in test set.
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <!--右侧放图-->
+                            <div class="col-sm-8" style="padding: 0"><img
+                                    src="{% static 'img/screening_in_help.jpg' %}"
+                                    style="border-bottom-left-radius: 0;border-top-left-radius: 0 "
+                                    class="img-responsive img-thumbnail"
+                                    alt="Responsive image">
+                            </div>
+                        </div>
+                    </div>
+                    <!--输出-->
+                    <div class="panel panel-info" style="margin-bottom: 100px">
+                        <div class="panel-heading"><strong>Job Results</strong></div>
+                        <div class="panel-body" style="padding: 0">
+                            <!--表格-->
+                            <table class="table table-responsive table-hover">
+                                <!--介绍-->
+                                <tr>
+                                    <th>result.zip</th>
+                                    <td class="text-justify" colspan="5">The result file contains 1 file folder named
+                                        report containing 1 CSV file.
+                                        <br>The CSV file record the ligand name and corresponding predicted probability
+                                        of being an binder to the receptor.
+                                    </td>
+                                </tr>
+                                <!--示例文件名-->
+                                <tr class="text-center">
+                                    <th colspan="6"><strong class="text-danger">active_ligand.csv</strong></th>
+                                </tr>
+                                <!--示例标题-->
+                                <tr class="bg-success">
+                                    <th>name</th>
+                                    <th>score</th>
+                                </tr>
+                                <!--示例数据-->
+                                <tr class="bg-success">
+                                    <td>CHEMBL559826</td>
+                                    <td>0.997828423976898</td>
+                                </tr>
+                                <tr class="bg-success">
+                                    <td>CHEMBL259247</td>
+                                    <td>0.953756630420684</td>
+                                </tr>
+                                <tr class="bg-success">
+                                    <td>...</td>
+                                    <td>...</td>
+                                </tr>
+                                <tr class="bg-success">
+                                    <td>ZINC64611921</td>
+                                    <td>0.649281680583953</td>
+                                </tr>
+                                <tr class="bg-success">
+                                    <td>CHEMBL556874</td>
+                                    <td>0.50817596912384</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!--pipeline-->
+                <div id="pipeline" class="tab-pane fade" role="tabpanel">
+                    <!--输入-->
+                    <div class="panel panel-success">
+                        <div class="panel-heading"><strong>Job Submission</strong></div>
+                        <div class="panel-body" style="padding: 0">
+                            <!--左侧放文字解说-->
+                            <div class="col-sm-4" style="padding: 0">
+                                <!--表格-->
+                                <table class="table table-responsive table-hover" style="margin: 0">
+                                    <!--重复描述-->
+                                    <tr>
+                                        <th>-</th>
+                                        <td class="text-justify">
+                                            ③⑦⑧ have been mentioned in <strong class="text-primary">Docking</strong>
+                                            help page;
+                                            <br>④ has been mentioned in <strong
+                                                class="text-primary">Descriptors</strong> help page;
+                                            <br>⑤⑥ have been mentioned in <strong
+                                                class="text-primary">Modelling</strong> help page;
+                                        </td>
+                                    </tr>
+                                    <!--ligand decoys test ligand-->
+                                    <tr>
+                                        <th>①</th>
+                                        <td class="text-justify">
+                                            The '<strong>Ligand</strong>' should be binders to the receptors.
+                                            <br>The '<strong>Decoys</strong>' should be non-binders to the receptors.
+                                            <br>The '<strong>Test ligand</strong>' are the wait-to-be-screened ligands
+                                            that we do not know if they are binders or non-binders.
+                                            <br>Descriptors generated from '<strong>Ligand</strong>' and
+                                            '<strong>Decoys</strong>' assemble the training set while descriptors
+                                            calculated from '<strong>Test ligand</strong>' form the test set.
+                                        </td>
+                                    </tr>
+                                    <!--Docking Modelling-->
+                                    <tr>
+                                        <th>②</th>
+                                        <td class="text-justify">
+                                            Different from mentioned in <strong class="text-primary">Docking</strong>
+                                            and <strong class="text-primary">Modelling</strong> help page, users can
+                                            cancel docking or modelling by select option 'no' in the corresponding
+                                            select
+                                            box.
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <!--右侧放图-->
+                            <div class="col-sm-8" style="padding: 0"><img src="{% static 'img/pipeline_in_help.jpg' %}"
+                                                                          style="border-bottom-left-radius: 0;border-top-left-radius: 0 "
+                                                                          class="img-responsive img-thumbnail"
+                                                                          alt="Responsive image">
+                            </div>
+                        </div>
+                    </div>
+                    <!--输出-->
+                    <div class="panel panel-info" style="margin-bottom: 100px">
+                        <div class="panel-heading"><strong>Job Results</strong></div>
+                        <div class="panel-body" style="padding: 0">
+                            <!--左侧放图-->
+                            <div class="col-sm-8" style="padding: 0"><img
+                                    src="{% static 'img/pipeline_out_help.jpg' %}"
+                                    class="img-responsive img-thumbnail"
+                                    style="border-top-right-radius: 0;border-bottom-right-radius: 0"
+                                    alt="Responsive image">
+                            </div>
+                            <!--右侧放文字解说-->
+                            <div class="col-sm-4" style="padding: 0">
+                                <!--表格-->
+                                <table class="table table-responsive table-hover">
+                                    <!--下载连接-->
+                                    <tr>
+                                        <th>-</th>
+                                        <td class="text-justify">
+                                            ①②③ have been mentioned in <strong class="text-primary">Modelling</strong>
+                                            help page;
+                                            <br>④⑤⑥⑦ have been mentioned in <strong
+                                                class="text-primary">Docking</strong> help page.
+                                        </td>
+                                    </tr>
+                                    <!--对接可视化-->
+                                    <tr>
+                                        <th>④</th>
+                                        <td class="text-justify">Different from the one mentioned in the <strong
+                                                class="text-primary">Docking</strong> help page, the numbers in the
+                                            Score
+                                            column are the probabilities of being a binder to the receptor instead of
+                                            the
+                                            docking score and the ligands in the table are top-100 binders predicted by
+                                            the model.
+                                        </td>
+                                    </tr>
+                                    <!--相互作用频率统计-->
+                                    <tr>
+                                        <th>⑥</th>
+                                        <td class="text-justify">The <strong class="text-danger">interaction frequency
+                                            analysis</strong> implemented in the <strong
+                                                class="text-primary">Pipeline</strong> module is based on the active
+                                            ligands in the training set while the one in the <strong
+                                                    class="text-primary">Docking</strong>
+                                            module is based on all the ligands uploaded.
+                                            <br>Therefore, the statistics in this module are more reliable and can be
+                                            used as a reference for the binding mode of the receptor-ligand complex.
+                                        </td>
+                                    </tr>
+                                    <!--结果文件-->
+                                    <tr>
+                                        <th>-</th>
+                                        <td class="text-justify">The result file contains 4 file folders:
+                                            <br><br><strong>comolex</strong>:
+                                            <br>top-100 protein-ligand compl-exes files in
+                                            pdb
+                                            format;
+                                            <br><br><strong>files</strong>:
+                                            <br>conformation files of docked ligands in mol2
+                                            format;
+                                            <br><br><strong>csvs</strong>:
+                                            <br>1) descriptor_file.csv: training set;
+                                            <br>2) test_descriptor_file.csv: test set;
+                                            <br>3) xx_score.csv: descriptors computed by single tools;
+                                            <br><br><strong>reports</strong>:
+                                            <br>1) score.csv: docking score of protein-ligand complexes;
+                                            <br>2) interaction.csv & data.csv: interaction statistics;
+                                            <br>3) bias_var.csv: the model accuracy on training set and validation set
+                                            and F1 score on the validation set during hyper-parameters' tuning process;
+                                            <br>4) final_parameter.csv: hyper-parameters of the best model;
+                                            <br>5) model_metric.csv: model performance under different evaluation
+                                            metrics;
+                                            <br>6) feature_importance.csv: the features used in modelling and their
+                                            importance score calculated by Random Forest Classifier;
+                                            <br>7) active_ligand.csv: the result of virtual screening (the ligand name
+                                            and corresponding predicted probability of being an binder to the receptor);
+                                            <br>8) bias_var.png: the figure is plotted based on accuracy data in
+                                            bias_var.csv;
+                                            <br>9) learning_curve.png: the figure is plotted based on F1 score data in
+                                            bias_var.csv;
+                                            <br>10) hyperParameter_scatter.png: the figure is plotted based on the data
+                                            of the model loss, hyper-parameter values and the tuning rounds;
+                                            <br>11) roc.png: the receiver operating characteristic curve plotted based
+                                            on model performance on the test set;
+                                            <br>12) shap.png: the figure is plotted by <strong><em>Shap</em></strong>
+                                            and is used for model interpretation;
+                                            <br>13) cluster.png: this figure is generated by <strong><em>RDKit</em></strong>;
+                                            <br>14) pocket.pdb: if residue sequence number is provided, the pocket of
+                                            the
+                                            receptor in PDB format will be produced;
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+<!--js-->
+{% block js %}
+    <script type="text/javascript">
+        $(function () {
+            $('.my_help_tab li a').click(function (e) {
+                e.preventDefault();
+                $(this).tab('show')
+            })
+        })
+    </script>
+{% endblock %}
+
+

@@ -1,0 +1,59 @@
+<!--继承模板-->
+{% extends 'queue/base.html' %}
+<!--修改标题-->
+{% block title %}
+    <title>Contact</title>
+{% endblock %}
+<!--修改内容-->
+{% block global_content %}
+    <!--容器-->
+    <div class="container" id="my_paper_container" style="font-size: 18px; font-family: 'Times New Roman'">
+        <br/><br/><br/>
+        <!--本文-->
+        <div class="row">
+            <!--面板-->
+            <div class="panel panel-success">
+                <!--面板标题-->
+                <div class="panel-heading" style="font-size: 24px; padding-left: 7px"><strong>If you have questions or need help, you are welcome to contact us.</strong></div>
+                <!--表格-->
+                <table class="table table-hover">
+                    <!--姓名-->
+                    <tr>
+                        <td class="text-left"><strong>Prof. Tingjun Hou</strong>
+                        </td>
+                    </tr>
+                    <!--电话-->
+                    <tr>
+                        <td class="text-left">Phone: +86-571-88208412
+                        </td>
+                    </tr>
+                    <!--邮箱-->
+                    <tr>
+                        <td class="text-left">Email: tingjunhou@zju.edu.cn
+                        </td>
+                    </tr>
+                    <!--地址-->
+                    <tr>
+                        <td class="text-left">Address: College of Pharmaceutical Sciences, Zhejiang University, Hangzhou,
+                            Zhejiang 310058, China
+                        </td>
+                    </tr>
+                    <!--我的信息-->
+                    <tr>
+                        <td class="text-left"><strong>Xujun Zhang</strong>
+                        </td>
+                    </tr>
+                    <!--邮箱-->
+                    <tr>
+                        <td class="text-left">Email: xujunzhang@zju.edu.cn
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <br/>
+    </div>
+{% endblock %}
+
+
+

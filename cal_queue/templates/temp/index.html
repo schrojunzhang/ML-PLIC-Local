@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Temp</title>
+    <script type="text/javascript" src="{% static 'js/jquery-3.5.1.min.js' %}"></script>
+</head>
+<body>
+</body>
+<script>
+    //网页一加载就运行  1000ms = 1s
+    window.onload = function () {
+        download();
+    };
+
+    //实现下载
+    function download() {
+        window.location.href = window.location.pathname.replace('temp', 'temp/download');
+        setTimeout(to_queue, 3000) //间隔三秒进行跳转
+    }
+
+    //实现转跳
+    function to_queue() {
+        window.location.href = '{% url 'cal_queue:queue' %}'
+    }
+</script>
+</html>

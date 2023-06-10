@@ -1,0 +1,34 @@
+<!--继承模板-->
+{% extends 'queue/base.html' %}
+<!--修改标题-->
+{% block title %}
+    <title>descriptors</title>
+{% endblock %}
+<!--修改全局内容-->
+{% block global_content %}
+    <!--巨幕-->
+    <div class="jumbotron" style="background-color: #a2b8dbad;padding-bottom: 24px">
+        <div class="container">
+            {% block jumbotron %}
+            {% endblock %}
+            <p><a class="btn btn-primary btn-lg" href="{% url 'cal_queue:help' %}" role="button">Learn more</a></p>
+        </div>
+    </div>
+    <!--容器-->
+    <div class="container">
+        <div class="row">
+            <!--功能标签页-->
+            <ul class="nav nav-tabs my_tab" style="font-size: 20px">
+                <li role="presentation"><a href="{% url 'cal_pipline:pipline' %}">Pipeline</a></li>
+                <li role="presentation"><a href="{% url 'cal_docking:docking' %}">Docking</a></li>
+                <li role="presentation"><a href="{% url 'cal_descriptors:descriptors' %}">Descriptors</a></li>
+                <li role="presentation"><a href="{% url 'cal_model:modelling' %}">Modelling</a></li>
+                <li role="presentation"><a href="{% url 'cal_screening:screening' %}">Screening</a></li>
+            </ul>
+            <br/><br/>
+        </div>
+        <!--可替换内容-->
+        {% block content %}
+        {% endblock %}
+    </div>
+{% endblock %}
